@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <title>Title</title>
 
     <!-- JQuery -->
@@ -30,28 +31,14 @@
 </head>
 <body id="main" style="width: 100%; min-height: 100vh;">
     {% include 'mobile/common/navbar.html' %}
-
     {% if item %}
         <div class="flex">
-            <table class="table table-bordered" style="margin-top: 50px;">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Название</th>
-                        <th>Подкатегории</th>
-                        <th>Описание</th>
-                        <th>Состояние</th>
-                        <th>Фотографии</th>
-                    </tr>
-                </thead>
-
-                <tbody id="the_table_body">
-
-                </tbody>
-            </table>
-            <button class="btn btn-dark btn-lg" onclick="open_order_form(the_item.id)">Заказать</button>
+            <div id="the-table-cont"></div>
+            <button class="btn btn-dark btn-lg mb-2" onclick="open_order_form(the_item.id)"><i class="fas fa-envelope"></i> Заказать</button>
             <div id="split"></div>
             {% for path in item.photo_paths %}
-            <img src="/static/images/items/{{ path }}">
+
+            <img class="photo-gal" src="/static/images/items/{{ path }}">
             {% endfor %}
         </div>
 
@@ -59,17 +46,13 @@
         <p>item not found</p>
     {% endif %}
 
-
-
-
     <script>
         const the_item = {{json_item|safe}}
-        $('#the_table_body').html(gen_user_table_rows(the_item))
+        $('#the-table-cont').html(gen_user_table_rows(the_item))
         the_searcher.fetch_blocked = true;
     </script>
 {% include 'mobile/common/absolute_features.html' %}
 {% include 'mobile/common/order_form.html' %}
-<div style="height: 50vh;"></div>
 {% include 'mobile/common/footer.html' %}
 </body>
 </html>

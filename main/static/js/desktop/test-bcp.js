@@ -38,11 +38,6 @@ class Searcher
         this.fetch_blocked = false;
     }
 
-    sorts_by_category()
-    {
-        return this.cat != null;
-    }
-
     make_query({q=null, cat=null, id=null})
     {
         this.items = [];
@@ -175,34 +170,31 @@ function toggle_fav_tab()
     }
     else
     {
-        $('body').css('position', 'fixed');
         get_fav_items(update_fav_table);
     }
 }
 
-function edit_favourite(item_id, subcat_idx)
+function edit_favourite(item_id, elem)
 {
-
-    let elem = $(`[data-item_id='${item_id}'][data-subcat_idx=${subcat_idx}][data-role='cart-action']`);
-    let subcat = $(`[data-item_id='${item_id}'][data-subcat_id=${subcat_idx}]`);
-    let checked = !elem.data('checked')
-    if (!checked)
+    let checked;
+    if ($(elem).prop("checked") != undefined)
     {
-        subcat.removeClass('fav')
+        // checkbox
+        checked = $(elem).prop("checked")
     }
     else
     {
-        subcat.addClass('fav')
+        checked = !$(elem).data('checked')
+        $(elem).data('checked', checked);
     }
-    elem.data('checked', checked);
-
     let cart_action = checked?'<span>Убрать из корзины</span><i style="margin-left: 4px; color: gray" class="fas fa-trash-alt"></i>':
     '<span>Добавить в корзину</span><i style="margin-left: 2px; color: gray" class="fas fa-shopping-cart"></i>';
 
-    elem.html(cart_action);
+    $(`[data-item_id="${item_id}"][data-checked]`).html(cart_action);
+    $(`input[type=checkbox][data-item_id='${item_id}']`).prop( "checked", checked );
 
     $.ajax({url: '/api',
-    data: {'id_to_fav': item_id, 'fav_idx': subcat_idx, 'fav': checked?"1":"0", csrfmiddlewaretoken: csrf },
+    data: {'id_to_fav': item_id, 'fav': checked?"1":"0", csrfmiddlewaretoken: csrf },
     method: 'POST'})
 }
 
@@ -585,7 +577,6 @@ function get_fav_items(callback)
 function close_fav_table(){
     $(`#fav_container`).removeClass('fav_opened');
     $(`#fav_container`).css("height", 0)
-    $('body').css('position', 'relative');
 }
 
 function update_fav_table(fav_items)
@@ -609,7 +600,11 @@ function update_fav_table(fav_items)
         return;
     }
 
-    $(`#fav_container`).append(`<div id='fav-tabs-cont'></div>
+    $(`#fav_container`).append(`<table id="fav_table"
+                                       class="table table-bordered">
+                                    <tbody>
+                                    </tbody>
+                               </table>
 
                                <div onclick='close_fav_table()'
                                     id='collapse_fav_tab'>
@@ -617,9 +612,9 @@ function update_fav_table(fav_items)
                               </div>`)
     for (let item of fav_items)
     {
-        $(`#fav-tabs-cont`).append(`<table class="table table-bordered"><tr>
+        $(`#fav_table > tbody`).append(`<tr>
                                             <td class=''>
-                                                ${item.name}
+                                                ${gen_checkbox(item)} ${item.name}
                                             </td>
                                             <td>
                                                 ${item.description}
@@ -627,18 +622,14 @@ function update_fav_table(fav_items)
                                             <td>
                                                 ${item.condition}
                                             </td>
-                                            <td><table>
-                                                ${gen_subcat_general(item.id, item.subcat_id, item.param, item.price, item.amount, true)}
-                                            </table></td></tr>
-                                            <tr>
-                                            <td colspan='2'>
+                                            <td>
                                                 <button class='btn btn-warning btn-block' onclick="open_order_form(${item.id})">Заказать</button>
                                             </td>
-                                            <td colspan='2'>
+                                            <td>
                                                 <button class='btn btn-warning btn-block nowrap' onclick="the_searcher.make_query({id: ${item.id}});
                                                 $('html, body').animate({ scrollTop: $('#split').offset().top-57 }, 1000); close_fav_table();">Открыть на странице</button>
                                             </td>
-                                        </tr></table>`)
+                                        </tr>`)
     }
 }
 
@@ -769,11 +760,11 @@ function delete_subcat(item_id, subcat_id)
     $(`tr[data-subcat_id='${subcat_id}'][data-item_id='${item_id}']`).remove();
 }
 
-function gen_subcat_general(item_id, subcat_id, param, price, amount, fav)
+function gen_subcat(subcat, item_id)
 {
-    console.log("gen subcat", item_id, subcat_id);
+    let subcat_id = `sci-${Math.random()}`;
     subcat_html = `
-    <tr data-subcat_idx='${subcat_id}' data-item_id='${item_id}'>
+    <tr data-subcat_id='${subcat_id}' data-item_id='${item_id}'>
         <td>
             ${ADMIN?`
                 <textarea
@@ -783,9 +774,9 @@ function gen_subcat_general(item_id, subcat_id, param, price, amount, fav)
                     data-item_id='${item_id}'
                     data-role='param'
                     class='edit-form'>
-                        ${param}
+                        ${subcat.param}
                 </textarea>`
-                : param || DEF_BLANK_VAL_TEXT}
+                : subcat.param || DEF_BLANK_VAL_TEXT}
         </td>
 
         <td>
@@ -794,8 +785,8 @@ function gen_subcat_general(item_id, subcat_id, param, price, amount, fav)
                                 data-item_id='${item_id}'
                                 data-role='price'
                                 class='edit-form input-int text-form-trackable'
-                                value=${price}>`
-                :price || 0} грн.
+                                value=${subcat.price}>`
+                :subcat.price || 0} грн.
             </span>
         </td>
 
@@ -805,44 +796,18 @@ function gen_subcat_general(item_id, subcat_id, param, price, amount, fav)
                             data-item_id='${item_id}'
                             data-role='amount'
                             class='edit-form input-int text-form-trackable'
-                            value='${amount}'>`
-                    :amount || DEF_BLANK_VAL_NUM} шт.
+                            value='${subcat.amount}'>`
+                    :subcat.amount || DEF_BLANK_VAL_NUM} шт.
             </span>
         </td>
 
         ${ADMIN?
         `<td>
             <button class='btn btn-danger' onclick='delete_subcat("${item_id}", "${subcat_id}")'>${LANG.delete}</button>
-        </td>`:
-        `<td>
-            <!-- Three dots menu -->
-            <div style='display: inline-block' class="dropdown three-dots">
-              <button class="three-dots-btn" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <i class="fas fa-ellipsis-v" style='font-size: 15px;'></i>
-              </button>
-              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                <div class="dropdown-item" data-item_id='${item_id}' data-subcat_idx=${subcat_id} data-role='cart-action' data-checked='${fav}' onclick='edit_favourite(${item_id}, ${subcat_id})'>
-                    ${fav?
-                        '<span>Убрать из корзины</span><i style="margin-left: 4px; color: gray" class="fas fa-trash-alt"></i>':
-                        '<span>Добавить в корзину</span><i style="margin-left: 2px; color: gray" class="fas fa-shopping-cart"></i>'}
-                </div>
-                <div class="dropdown-item" onclick='open_order_form(${item_id})'>
-                    <span>Заказать</span><i style='margin-left: 5px; color: gray' class="fas fa-money-check"></i>
-                </div>
-              </div>
-            </div>
-            <!-- /Three dots menu -->
-        </td>`
-    }
-
-    </tr>`
-
+        </td>`:""}
+    </tr>
+    `
     return subcat_html;
-}
-
-function gen_subcat(subcat, item_id, subcat_idx)
-{
-    return gen_subcat_general(item_id, subcat_idx, subcat.param, subcat.price, subcat.amount, subcat.fav);
 }
 
 function add_subcat_to(subcat_html, item_id)
@@ -853,9 +818,9 @@ function add_subcat_to(subcat_html, item_id)
 function gen_subcats_table(subcats, item_id)
 {
     let html = ""
-        for (let [idx, subcat] of subcats.entries())
+        for (let subcat of subcats)
         {
-            html += gen_subcat(subcat, item_id, idx);
+            html += gen_subcat(subcat, item_id)
         }
     return html;
 }
@@ -1125,7 +1090,26 @@ function gen_user_table_rows(item)
         <tr data-item_id='${item.id}' data-role='main_item_data'>
             <td style='max-width: 20vw'>
                 <div class='' style='position: relative; display: flex; align-items: flex-end'>
+                    <!--${gen_checkbox(item)}-->
                     <p style='display: inline-block; margin: 0;'><a style='font-size: 20px;' class='' href="/item/${item.id}" onclick='window.open("/item/${item.id}")'>${item.name}</a></p>
+
+                    <!-- Three dots menu -->
+                    <div style='display: inline-block' class="dropdown three-dots">
+                      <button class="three-dots-btn" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v" style='font-size: 15px;'></i>
+                      </button>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <div class="dropdown-item" data-item_id='${item.id}' data-checked='${item.fav}' onclick='edit_favourite(${item.id}, this)'>
+                            ${item.fav?'<span>Убрать из корзины</span><i style="margin-left: 4px; color: gray" class="fas fa-trash-alt"></i>':
+                            '<span>Добавить в корзину</span><i style="margin-left: 2px; color: gray" class="fas fa-shopping-cart"></i>'}
+                        </div>
+                        <div class="dropdown-item" onclick='open_order_form(${item.id})'>
+                            <span>Заказать</span><i style='margin-left: 5px; color: gray' class="fas fa-money-check"></i>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- /Three dots menu -->
+
                 </div>
             </td>
             <td colspan=>
@@ -1139,7 +1123,6 @@ function gen_user_table_rows(item)
                     </thead>
 
                     <tbody>
-
                         ${gen_subcats_table(item.subcats, item.id)}
                     </tbody>
                 </table>

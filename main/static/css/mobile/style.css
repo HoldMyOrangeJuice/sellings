@@ -1,6 +1,7 @@
 :root {
   --base-image-bigger: 260px;
   --base-image-smaller: 173px;
+  --preview-img-size: 50px;
 }
 
 td, th
@@ -277,8 +278,26 @@ padding: 20px 10px 20px 10px;
 
 .image_bulk
 {
-
     display: grid;
+    grid-auto-flow: column;
+    grid-gap: 10px;
+}
+.bulk_item
+{
+     width: var(--preview-img-size);
+     height: var(--preview-img-size);
+     background-size: cover;
+     background-position: center center;
+}
+
+.bulk_main
+{
+    width: calc( var(--preview-img-size) * 2);
+    height: calc( var(--preview-img-size) * 2);
+    background-size: cover;
+    background-position: center center;
+    grid-row: 1 / span 2;
+    grid-column: 1 / span 2;
 }
 
 .image_bulk.many
@@ -585,5 +604,27 @@ input[type=submit] {
 
 .fav
 {
-    background-color: #DEDEDE ;
+    background-color:#F7F7F7;
+}
+#the-table-cont
+{
+    margin: 10vh 0 0 0;
+}
+
+.photo-gal
+{
+    max-width: 80vw;
+    margin-bottom: 1rem;
+}
+th > p > a:hover
+{
+    text-decoration: underline;
+}
+.subtitle
+{
+    margin: 5px 5px 5px 5px;
+    color: gray;
+    text-decoration: underline;
+    font-weight: 200;
+    text-align: center;
 }

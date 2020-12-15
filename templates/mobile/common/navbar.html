@@ -10,7 +10,8 @@
     <!-- Go Up -->
 
     <a class="navbar-brand-" href="#">Наверх</a>
-
+    {% else %}
+    <a class="navbar-brand-" href="#"></a>
     {% endif %}
     <!-- row -->
 
@@ -89,7 +90,7 @@
 
           </button>
         {% else %}
-          <button class="btn btn-outline-success my-2 my-sm-0" type="button" onclick="window.location.href = ('/?q=' + $('#search').val() + '#main' )">Искать</button>
+          <button class="btn btn-outline-success my-sm-0" type="button" onclick="window.location.href = ('/?q=' + $('#search').val() + '#main' )">  <i class=" fas fa-search"></i></button>
           <script>
             document.getElementById('search_form').onsubmit = ()=> {
             $('html, body').animate({ scrollTop: $('#split').offset().top-57 }, 1000);

@@ -66,8 +66,9 @@ def count_cats():
         s.append((cat_id, CATEGORIES.get(cat_id), r[cat_id]))
     return s
 
+
 def gtp(request):
-    if False and mobile(request):
+    if not mobile(request):
         return "desktop"
     return "mobile"
 

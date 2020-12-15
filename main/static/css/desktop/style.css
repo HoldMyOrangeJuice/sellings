@@ -559,17 +559,12 @@ input[type=submit] {
 
 .three-dots
 {
-    position: absolute;
-    top: 0;
-    right: -5px;
-    padding: 0 1px 1px 1px;
     border: 0;
 }
 .three-dots-btn
 {
     background: 0;
     border: 0;
-    padding-right: 0;
 }
 .three-dots-btn:focus
 {

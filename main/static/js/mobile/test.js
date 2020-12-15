@@ -1,3 +1,4 @@
+// mobile
 zip = rows=>rows[0].map((_,c)=>rows.map(row=>row[c]))
 function reset(e)
 {
@@ -987,42 +988,15 @@ function fill_user_image_bulk(item_id, vert_images_, hor_images_)
 
 function gen_user_image_bulk(paths, item_id)
 {
-    console.log('generate image bulk for paths', paths);
     // bulk wrapper
     let html = `<div data-item_id='${item_id}' data-role='image_bulk' class='image_bulk'>`;
-    let vert = [];
-    let hor = [];
 
-    let done = 0;
-    for (let path of paths)
+    for (let [i, path] of paths.entries())
     {
-
-        let img = new Image();
-        img.onload = function()
-        {
-
-            if (this.width > this.height)
-                hor.push(path);
-            else
-                vert.push(path)
-
-            done += 1
-            if (done == paths.length)
-            {
-                fill_user_image_bulk(item_id, vert, hor);
-                // listen to clicks on images defined above in fill_user_image_bulk
-                // every image icon (even divs with bg as image) have same data: path
-
-                // set for each bulk individually to prevent firing callback multiple times
-                $(`div[data-item_id='${item_id}'] > [data-role='image_icon']`).on('click', e =>{handle_image_click( e.target );})
-            }
-        }
-        img.src = `/static/images/items/${path}`;
-
+        if (i == 0)
+        html += `<div class='bulk_main' style='background-image: url("static/images/items/${path}");'></div>`
+        html += `<div class='bulk_item' style='background-image: url("static/images/items/${path}");'></div>`
     }
-
-
-
     html += "</div>";
 
     return html;
@@ -1115,6 +1089,8 @@ function gen_user_table_rows(item)
                     <p style='display: inline-block; margin: 0;'>
                         <a style='font-size: 20px; color: white;' class='' href="/item/${item.id}" onclick='window.open("/item/${item.id}")'>${item.name}</a>
                     </p>
+
+                        <a  class='subtitle' href="/item/${item.id}" onclick='window.open("/item/${item.id}")'>Страница предмета</a>
                 </th>
             </tr>
         </thead>
