@@ -1,6 +1,7 @@
 :root {
   --base-image-bigger: 260px;
   --base-image-smaller: 173px;
+  --preview-img-size: 100px;
 }
 
 td, th
@@ -84,6 +85,10 @@ nav
 {
     border-bottom: 1px solid #E5E5E5;
     box-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+.fav
+{
+    background-color:#F7F7F7;
 }
 
 .form_vert
@@ -279,8 +284,26 @@ padding: 20px 10px 20px 10px;
 
 .image_bulk
 {
-
     display: grid;
+    grid-auto-flow: column;
+    grid-gap: 10px;
+}
+.bulk_item
+{
+     width: var(--preview-img-size);
+     height: var(--preview-img-size);
+     background-size: cover;
+     background-position: center center;
+}
+
+.bulk_main
+{
+    width: calc( var(--preview-img-size) * 2);
+    height: calc( var(--preview-img-size) * 2);
+    background-size: cover;
+    background-position: center center;
+    grid-row: 1 / span 2;
+    grid-column: 1 / span 2;
 }
 
 .image_bulk.many
@@ -336,7 +359,8 @@ padding: 20px 10px 20px 10px;
 
 #image_main
 {
-    max-width: 50vw;
+    max-width: 90vw;
+    max-height: 60vh;
 }
 #close_viewer_icon
 {
@@ -353,15 +377,20 @@ padding: 20px 10px 20px 10px;
     background-image: linear-gradient(rgb(221, 225, 230) 0%, rgb(185, 186, 189) 100%);
     padding: 2px;
     border: 1px solid #BAC3C8;
+
 }
 .img-icon
 {
     width: 10vw;
     padding: 5px;
     background: #EBEBEB;
-    border: 1px solid #C3C6C8;
+    border: 4px solid #C3C6C8;
     margin: 3px;
     box-shadow: 6px 4px 18px -1px rgba(153,153,153,0.54);
+    width: var(--preview-img-size);
+    height: var(--preview-img-size);
+    background-size: cover;
+    background-position: center center;
 }
 
 #viewer_controls
@@ -370,7 +399,7 @@ padding: 20px 10px 20px 10px;
 }
 .active
 {
-    background-color: #444546;
+    border: 4px solid #444546!important;
 }
 
 .flex
@@ -561,6 +590,7 @@ input[type=submit] {
 {
     border: 0;
 }
+
 .three-dots-btn
 {
     background: 0;
@@ -569,4 +599,13 @@ input[type=submit] {
 .three-dots-btn:focus
 {
     outline: none;
+}
+
+.illustration-big
+{
+    border: #FFF6CA 2px solid;
+    background-color: #FFF9DC;
+    padding: 5px;
+    max-width: 90vw;
+    margin: 20px;
 }

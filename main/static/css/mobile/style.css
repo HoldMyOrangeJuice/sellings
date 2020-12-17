@@ -353,14 +353,16 @@ padding: 20px 10px 20px 10px;
 
 #image_main
 {
-    max-width: 50vw;
+    max-width: 90vw;
+    max-height: 60vh;
 }
 #close_viewer_icon
 {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    width: 50vw;
+    position: absolute;
+    z-index: 2000;
+    right: 10vw;
+    top: 150px;
+    color: white;
 }
 
 #image_icons
@@ -381,9 +383,14 @@ padding: 20px 10px 20px 10px;
     box-shadow: 6px 4px 18px -1px rgba(153,153,153,0.54);
 }
 
-#viewer_controls
+#viewer_buttons
 {
     margin: 10px 0 10px 0;
+}
+.viewer_controls
+{
+    position: absolute;
+    bottom: 5vh;
 }
 .active
 {
@@ -620,6 +627,7 @@ th > p > a:hover
 {
     text-decoration: underline;
 }
+
 .subtitle
 {
     margin: 5px 5px 5px 5px;
@@ -627,4 +635,16 @@ th > p > a:hover
     text-decoration: underline;
     font-weight: 200;
     text-align: center;
+}
+
+.dropdown-item
+{
+    width:96vw;
+    word-wrap: break-word!important;
+    white-space: normal!important;
+}
+
+.dropdown-menu
+{
+
 }

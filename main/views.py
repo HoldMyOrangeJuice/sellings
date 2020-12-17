@@ -385,6 +385,22 @@ def get_hints(q):
     return Response(success=True, message="", payload={"sug": names[:10]})
 
 
+def fetch(id=None, ids=None, query=None, category=None, max_data=None, sess=None):
+    items = []
+
+    if id:
+        items.append(Item.objects.get(id=id))
+    if ids:
+        items.extend([Item.objects.get(id=id) for id in ids])
+    if query:
+        items.append( search(query=query) )
+    if category:
+        items.append(search(cat=category))
+    print(items)
+    ser = items[:max_data] if max_data != 0 else items
+    return Response(success=True, message='fetch success', payload={'items': serialize_items(items=ser, session=sess)})
+
+
 def api_view(request):
     if request.method == "POST" and request.user.is_superuser:
 
@@ -460,6 +476,15 @@ def api_view(request):
                 return Response(success=True, message="fav items", payload={'items': items}).wrap()
             else:
                 return Response(success=True, message="fav items", payload={'items': []}).wrap()
+
+        if request.GET.get('max_data'):
+            max_data = int(request.GET.get('max_data'))
+            id = request.GET.get('id')
+            # should stringify
+            ids = request.GET.get('ids')
+            query = request.GET.get('query')
+            category = request.GET.get('category')
+            return fetch(id=id, ids=ids, query=query, category=category, max_data=max_data, sess=request.session).wrap()
 
         query = request.GET.get("q")
         category = request.GET.get('cat')

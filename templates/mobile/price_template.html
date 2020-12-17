@@ -27,6 +27,7 @@
 <link href="{% static 'css/mobile/sidebar.css' %}" rel="stylesheet">
 <script src="{% static 'js/mobile/test.js' %}"></script>
 <script src="{% static 'js/listeners.js' %}"></script>
+<script src="{% static 'js/swap.js'%}"></script>
 
 {% include 'mobile/common/navbar.html' %}
 
@@ -53,7 +54,7 @@
         <div id="sidebar-wrapper">
             <div class="sidebar-nav">
 
-                <p class="sidebar-brand">
+                <p class="sidebar-brand flex">
                     <a href="#">Категории</a>
                 </p>
 
@@ -61,7 +62,9 @@
 
                 {% for cat_id, category, count in counted_categories %}
                 <div class="pad-txt">
-                    <div class="sidebar-entry-wrap"><a class="cat-entry noselect" href="#main" onclick="the_searcher.make_query({cat: '{{cat_id}}'})">{{category}} ({{count}})</a></div>
+                    <div class="sidebar-entry-wrap">
+                        <a class="cat-entry noselect"
+                           onclick="the_searcher.make_query({cat: '{{cat_id}}'})">{{category}} ({{count}})</a></div>
 
                 </div>
                 {% endfor %}
@@ -149,7 +152,7 @@ font-weight: 500;
 
 <!-- support for host?q= requests -->
 <script>
-    the_searcher.make_query({ {%if query is not None %}q: '{{query}}',{%endif%} {%if cat_id is not None %}cat: '{{cat_id}}'{%endif%} });
+    the_searcher.make_query({silent: true, {%if query is not None %}q: '{{query}}',{%endif%} {%if cat_id is not None %}cat: '{{cat_id}}',{%endif%} });
 </script>
 
 </body>

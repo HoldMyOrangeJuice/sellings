@@ -12,7 +12,7 @@ uuid = ()=>
   });
 }
 const DEF_BLANK_VAL_TEXT = "-";
-const DEF_BLANK_VAL_NUM = "unknwn";
+const DEF_BLANK_VAL_NUM = "???";
 const SCREENS_TILL_FETCH = 3;
 const LANG = {
     edit: "Редактировать",
@@ -36,6 +36,7 @@ class Searcher
         this.max_parts = 1;
         this.items = []
         this.fetch_blocked = false;
+        this.disabled = false
     }
 
     sorts_by_category()
@@ -45,6 +46,7 @@ class Searcher
 
     make_query({q=null, cat=null, id=null})
     {
+        if (this.disabled)return;
         this.items = [];
         $('#search').val(q || CATS[cat] || id);
 
@@ -70,7 +72,8 @@ class Searcher
         }
         else if (id != null)
         {
-            set_url(`/?id=${id}`);
+            if (!window.location.href.includes("/item/"))
+                set_url(`/?id=${id}`);
             this.query = null;
             this.cat = null;
             this.id=id;
@@ -83,7 +86,7 @@ class Searcher
     load_more()
     {
 
-        if (this.fetch_blocked)return;
+        if (this.fetch_blocked || this.disabled)return;
 
         if (this.part >= this.max_parts)
         {
@@ -184,7 +187,7 @@ function edit_favourite(item_id, subcat_idx)
 {
 
     let elem = $(`[data-item_id='${item_id}'][data-subcat_idx=${subcat_idx}][data-role='cart-action']`);
-    let subcat = $(`[data-item_id='${item_id}'][data-subcat_id=${subcat_idx}]`);
+    let subcat = $(`[data-item_id='${item_id}'][data-subcat_idx=${subcat_idx}]`);
     let checked = !elem.data('checked')
     if (!checked)
     {
@@ -376,14 +379,14 @@ function gen_image_viewer(active_path, images)
     let image_icons = ''
     for (let image of images)
     {
-        image_icons += `<img src='${image}' class='img-icon ${active_path==image?'active': ""}'>`
+        image_icons += `<div style='background-image: url(/static/images/items/${image})' class='img-icon ${active_path==image?'active': ""}'></div>`
     }
 
     return `<div id='image_viewer'>
                 <div id='close_viewer_icon'>
                     <i style='font-size: 20px;' class="fas fa-window-close" onclick="$('#image_viewer').remove(); $('.blur').hide();"></i>
                 </div>
-                <img id='image_main' src='${active_path}'>
+                <img id='image_main' src='/static/images/items/${active_path}'>
                 <div id='viewer_controls'>
                     <button id='viewer_prev' class='btn btn-warning'><i class="fas fa-angle-left"></i></button>
                     <button id='viewer_next' class='btn btn-warning'><i class="fas fa-angle-right"></i></button>
@@ -401,9 +404,7 @@ function open_photo_view_window(elem_clicked, parent)
 {
     photos = []
     let current = null;
-    console.log('called open_photo_view_window')
     // each element of parent has tags role=image_icon and path.
-
     let i = 0;
 
     for (let elem of parent.children())
@@ -423,8 +424,8 @@ function open_photo_view_window(elem_clicked, parent)
     const show = (i) =>
     {
         $('#image_viewer').find('.active').removeClass('active');
-        $($('#image_viewer').find('#image_icons').children().get(i)).addClass('active');
-        $('#image_main').attr('src', photos[i]);
+        $( $('#image_viewer').find('#image_icons').children().get(i) ).addClass('active');
+        $('#image_main').attr('src', `/static/images/items/${photos[i]}`);
     }
 
     const hide = () =>
@@ -435,7 +436,7 @@ function open_photo_view_window(elem_clicked, parent)
 
     $('body').on('keydown', e=>{if (e.key == 'Escape'){hide();}})
     $('.img-icon').on('click', e=>{show($(e.target).index())})
-    $('#image_viewer').on('click', e=>{if (e.target.nodeName == 'DIV'){hide()}})
+    $('#image_viewer').on('click', e=>{if (e.target.id == 'image_viewer'){hide()}})
 
     const next = ()=>
     {
@@ -456,7 +457,6 @@ function open_photo_view_window(elem_clicked, parent)
         }
         show(current);
     }
-    console.log('bound next to', $('#viewer_next'))
     // bind handlers
     $('#viewer_prev').on('keydown', (e)=>{ if( !$('#image_viewer').length)return; console.log(e.key); if (e.key == "ArrowLeft"){prev}; if (e.key == "ArrowRight"){next}})
     $('#viewer_prev').on('click', prev);
@@ -622,10 +622,10 @@ function update_fav_table(fav_items)
                                                 ${item.name}
                                             </td>
                                             <td>
-                                                ${item.description}
+                                                ${item.description || DEF_BLANK_VAL_TEXT}
                                             </td>
                                             <td>
-                                                ${item.condition}
+                                                ${item.condition || DEF_BLANK_VAL_TEXT}
                                             </td>
                                             <td><table>
                                                 ${gen_subcat_general(item.id, item.subcat_id, item.param, item.price, item.amount, true)}
@@ -635,11 +635,16 @@ function update_fav_table(fav_items)
                                                 <button class='btn btn-warning btn-block' onclick="open_order_form(${item.id})">Заказать</button>
                                             </td>
                                             <td colspan='2'>
-                                                <button class='btn btn-warning btn-block nowrap' onclick="the_searcher.make_query({id: ${item.id}});
-                                                $('html, body').animate({ scrollTop: $('#split').offset().top-57 }, 1000); close_fav_table();">Открыть на странице</button>
+                                                <button class='btn btn-warning btn-block nowrap'
+                                                onclick="open_in_new_window('/item/${item.id}')">
+                                                Открыть в новой вкладке</button>
                                             </td>
                                         </tr></table>`)
     }
+}
+function open_in_new_window(path)
+{
+    window.open(path);
 }
 
 function request_photos_delete(item_id)
@@ -766,20 +771,21 @@ function cancel_addition_of_photos(item_id)
 
 function delete_subcat(item_id, subcat_id)
 {
-    $(`tr[data-subcat_id='${subcat_id}'][data-item_id='${item_id}']`).remove();
+
+    $(`tr[data-subcat_idx='${subcat_id}'][data-item_id='${item_id}']`).remove();
 }
 
-function gen_subcat_general(item_id, subcat_id, param, price, amount, fav)
+function gen_subcat_general(item_id, subcat_id, param, price, amount, fav, unsaved)
 {
     console.log("gen subcat", item_id, subcat_id);
     subcat_html = `
-    <tr data-subcat_idx='${subcat_id}' data-item_id='${item_id}'>
+    <tr data-subcat_idx='${subcat_id}' data-item_id='${item_id}' class="${fav?'fav':''}">
         <td>
             ${ADMIN?`
                 <textarea
                     rows='1'
                     style='overflow:hidden'
-                    class='edit-form auto-adjust input-text text-form-trackable'
+                    class='edit-form auto-adjust input-text text-form-trackable ${(ADMIN&&unsaved)?'unsaved':''}'
                     data-item_id='${item_id}'
                     data-role='param'
                     class='edit-form'>
@@ -793,18 +799,18 @@ function gen_subcat_general(item_id, subcat_id, param, price, amount, fav)
                 ${ADMIN?`<input
                                 data-item_id='${item_id}'
                                 data-role='price'
-                                class='edit-form input-int text-form-trackable'
+                                class='edit-form input-int text-form-trackable ${(ADMIN&&unsaved)?'unsaved':''}'
                                 value=${price}>`
-                :price || 0} грн.
+                :price || DEF_BLANK_VAL_NUM} грн.
             </span>
         </td>
 
-        <td>
+        <td class=''>
             <span class='nowrap'>
                     ${ADMIN?`<input
                             data-item_id='${item_id}'
                             data-role='amount'
-                            class='edit-form input-int text-form-trackable'
+                            class='edit-form input-int text-form-trackable ${(ADMIN&&unsaved)?'unsaved':''}'
                             value='${amount}'>`
                     :amount || DEF_BLANK_VAL_NUM} шт.
             </span>
@@ -812,7 +818,8 @@ function gen_subcat_general(item_id, subcat_id, param, price, amount, fav)
 
         ${ADMIN?
         `<td>
-            <button class='btn btn-danger' onclick='delete_subcat("${item_id}", "${subcat_id}")'>${LANG.delete}</button>
+            <button class='btn btn-danger'
+            onclick='delete_subcat("${item_id}", "${subcat_id}")'>${LANG.delete}</button>
         </td>`:
         `<td>
             <!-- Three dots menu -->
@@ -821,7 +828,12 @@ function gen_subcat_general(item_id, subcat_id, param, price, amount, fav)
                 <i class="fas fa-ellipsis-v" style='font-size: 15px;'></i>
               </button>
               <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                <div class="dropdown-item" data-item_id='${item_id}' data-subcat_idx=${subcat_id} data-role='cart-action' data-checked='${fav}' onclick='edit_favourite(${item_id}, ${subcat_id})'>
+                <div class="dropdown-item"
+                     data-item_id='${item_id}'
+                     data-subcat_idx=${subcat_id}
+                     data-role='cart-action'
+                     data-checked='${fav}'
+                     onclick='edit_favourite(${item_id}, ${subcat_id})'>
                     ${fav?
                         '<span>Убрать из корзины</span><i style="margin-left: 4px; color: gray" class="fas fa-trash-alt"></i>':
                         '<span>Добавить в корзину</span><i style="margin-left: 2px; color: gray" class="fas fa-shopping-cart"></i>'}
@@ -836,18 +848,21 @@ function gen_subcat_general(item_id, subcat_id, param, price, amount, fav)
     }
 
     </tr>`
-
     return subcat_html;
 }
 
-function gen_subcat(subcat, item_id, subcat_idx)
+function gen_subcat(subcat, item_id, subcat_idx, unsaved)
 {
-    return gen_subcat_general(item_id, subcat_idx, subcat.param, subcat.price, subcat.amount, subcat.fav);
+    if (subcat_idx instanceof Function) {
+    subcat_idx = subcat_idx(item_id);
+    }
+    return gen_subcat_general(item_id, subcat_idx, subcat.param, subcat.price, subcat.amount, subcat.fav, unsaved);
 }
 
 function add_subcat_to(subcat_html, item_id)
 {
     $(`table[data-subcat_table=${item_id}]`).find('tbody').append(subcat_html)
+    track_text_changes();
 }
 
 function gen_subcats_table(subcats, item_id)
@@ -997,45 +1012,25 @@ function fill_user_image_bulk(item_id, vert_images_, hor_images_)
 
 function gen_user_image_bulk(paths, item_id)
 {
-    console.log('generate image bulk for paths', paths);
     // bulk wrapper
     let html = `<div data-item_id='${item_id}' data-role='image_bulk' class='image_bulk'>`;
-    let vert = [];
-    let hor = [];
 
-    let done = 0;
-    for (let path of paths)
+    for (let [i, path] of paths.entries())
     {
 
-        let img = new Image();
-        img.onload = function()
-        {
-
-            if (this.width > this.height)
-                hor.push(path);
-            else
-                vert.push(path)
-
-            done += 1
-            if (done == paths.length)
-            {
-                fill_user_image_bulk(item_id, vert, hor);
-                // listen to clicks on images defined above in fill_user_image_bulk
-                // every image icon (even divs with bg as image) have same data: path
-
-                // set for each bulk individually to prevent firing callback multiple times
-                $(`div[data-item_id='${item_id}'] > [data-role='image_icon']`).on('click', e =>{handle_image_click( e.target );})
-            }
-        }
-        img.src = `/static/images/items/${path}`;
-
+        html += `<div class='${i == 0?'bulk_main':'bulk_item'}'
+                      data-role='image_icon'
+                      data-path='${path}'
+                      onclick='handle_image_click(this)'
+                      style='background-image: url("/static/images/items/${path}");'></div>`
     }
-
-
-
     html += "</div>";
 
     return html;
+}
+function get_max_subcats(item_id)
+{
+    return $(`[data-subcat_table='${item_id}'] > tbody`).children().length
 }
 
 function gen_admin_table_rows(item)
@@ -1063,7 +1058,7 @@ function gen_admin_table_rows(item)
 
                     <button class='btn btn-success btn-lg btn-block'
                                style='margin-top: 10px'
-                               onclick='add_subcat_to(gen_subcat({param: "", price: 0, amount: 0}, ${item.id}), ${item.id})'>
+                               onclick='add_subcat_to(gen_subcat( {param: "", price: 0, amount: 0}, ${item.id}, get_max_subcats, true), ${item.id} )'>
                                ${LANG.add}
                        </button>
             </td>
@@ -1123,12 +1118,14 @@ function gen_user_table_rows(item)
 {
     return `
         <tr data-item_id='${item.id}' data-role='main_item_data'>
+
             <td style='max-width: 20vw'>
                 <div class='' style='position: relative; display: flex; align-items: flex-end'>
                     <p style='display: inline-block; margin: 0;'><a style='font-size: 20px;' class='' href="/item/${item.id}" onclick='window.open("/item/${item.id}")'>${item.name}</a></p>
                 </div>
             </td>
-            <td colspan=>
+
+            <td colspan>
                 <table data-subcat_table='${item.id}' style='width: 100%'>
                     <thead style='display: none'>
                         <tr>
@@ -1145,18 +1142,15 @@ function gen_user_table_rows(item)
                 </table>
             </td>
 
-            <!--
-            <td>
-                ${item.category}
-            </td>
-            -->
             <td style='max-width: 200px; min-width: 150px;'>
                 ${item.description || DEF_BLANK_VAL_TEXT}
             </td>
+
             <td>
                 ${item.condition || DEF_BLANK_VAL_TEXT}
             </td>
-            <td colspan=''>
+
+            <td>
             ${gen_image_bulk(item.photo_paths, item.id)}
             </td>
         </tr>`
@@ -1384,6 +1378,5 @@ function closeAllLists(elmnt) {
 }
 }
 document.addEventListener("click", function (e) {
-    console.log(e)
     closeAllLists(e.target);
 });

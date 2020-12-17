@@ -33,26 +33,17 @@
 
     {% if item %}
         <div class="flex">
-            <table class="table table-bordered" style="margin-top: 50px;">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Название</th>
-                        <th>Подкатегории</th>
-                        <th>Описание</th>
-                        <th>Состояние</th>
-                        <th>Фотографии</th>
-                    </tr>
-                </thead>
 
-                <tbody id="the_table_body">
+            <div id="table-container">
 
-                </tbody>
-            </table>
-            <button class="btn btn-dark btn-lg" onclick="open_order_form(the_item.id)">Заказать</button>
+            </div>
+
+            <button class="btn btn-dark btn-lg" onclick="open_order_form(the_searcher.items[0].id)">Заказать</button>
             <div id="split"></div>
             {% for path in item.photo_paths %}
-            <img src="/static/images/items/{{ path }}">
+                <img src="/static/images/items/{{ path }}" class="illustration-big">
             {% endfor %}
+
         </div>
 
     {% else %}
@@ -63,13 +54,12 @@
 
 
     <script>
-        const the_item = {{json_item|safe}}
-        $('#the_table_body').html(gen_user_table_rows(the_item))
-        the_searcher.fetch_blocked = true;
+        the_searcher.make_query({id: {{item.id}} });
+        the_searcher.disabled = true;
     </script>
 {% include 'desktop/common/absolute_features.html' %}
 {% include 'desktop/common/order_form.html' %}
-<div style="height: 50vh;"></div>
+
 {% include 'desktop/common/footer.html' %}
 </body>
 </html>

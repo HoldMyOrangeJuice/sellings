@@ -44,8 +44,27 @@ class Searcher
         return this.cat != null;
     }
 
-    make_query({q=null, cat=null, id=null})
+    fetch({id=null, ids=null, query=null, category=null, max_data=0}, cb)
     {
+        // same as make query but returns max_data entries
+        // and does not change searcher state
+        $.ajax({url:"/api",
+                method: "GET",
+                data: {id: id, ids:ids, query:query, category:category, max_data:max_data},
+                success: (r)=>{
+                    if (r.success)
+                    {
+                        cb(r.payload.items);
+                    }
+                }
+            });
+    }
+
+    make_query({q=null, cat=null, id=null, silent=false})
+    {
+        if (!silent)
+            scroll_to('#split');
+
         this.items = [];
         $('#search').val(q || CATS[cat] || id);
 
@@ -157,9 +176,74 @@ class Searcher
         add_table_contents(items);
     }
 }
+class Networker
+{
+    constructor()
+    {
+
+    }
+    makeRequest(method, url, data)
+    {
+        return new Promise(
+            function (resolve, reject)
+            {
+                let xhr = new XMLHttpRequest();
+                xhr.open(method, url);
+                xhr.onload = function ()
+                {
+                    if (this.status >= 200 && this.status < 300)
+                    {
+                        resolve(xhr.response);
+                    }
+                    else
+                    {
+                        reject({
+                            status: this.status,
+                            statusText: xhr.statusText
+                        });
+                    }
+                };
+                xhr.onerror = function ()
+                {
+                    reject({
+                        status: this.status,
+                        statusText: xhr.statusText
+                    });
+                };
+                xhr.send(data);
+            });
+    }
+
+    async POST(data)
+    {
+        return await this.makeRequest('POST', '/api', data);
+    }
+    async GET(data)
+    {
+        return await this.makeRequest('GET', '/api', data);
+    }
+
+    async add_item_async()
+    {
+        let form_data = new FormData($("#add_item_form")[0])
+        return await this.POST(form_data);
+    }
+
+    add_item()
+    {
+        function cb(data)
+        {
+            if (data.success)
+                reset_form();
+            else
+                alert("Не все поля заполнены.")
+        }
+        this.add_item_async().then(cb)
+    }
+}
 
 the_searcher = new Searcher();
-
+the_networker = new Networker();
 
 csrf = document.getElementsByName("csrfmiddlewaretoken")[0].value
 
@@ -184,7 +268,6 @@ function toggle_fav_tab()
 
 function edit_favourite(item_id, subcat_idx)
 {
-
     let elem = $(`[data-item_id='${item_id}'][data-subcat_idx=${subcat_idx}][data-role='cart-action']`);
     let subcat = $(`[data-item_id='${item_id}'][data-subcat_id=${subcat_idx}]`);
     let checked = !elem.data('checked')
@@ -194,6 +277,7 @@ function edit_favourite(item_id, subcat_idx)
     }
     else
     {
+        console.log("add class to",subcat )
         subcat.addClass('fav')
     }
     elem.data('checked', checked);
@@ -215,7 +299,7 @@ function wipe_content()
 }
 
 function add_item()
-    {
+{
         let form_data = new FormData($("#add_item_form")[0])
         let xhr = new XMLHttpRequest();
 
@@ -240,22 +324,20 @@ function add_item()
         xhr.send( form_data );
     }
 
+function search_query(query)
+{
+$.ajax({
+  url:"api",
+  method: "GET",
+  data: {"query": query },
+  success:
+  (data)=>
+  {
+  add_table_contents(data);
+  }
+});
 
-    function search_query(query)
-    {
-    $.ajax({
-      url:"api",
-      method: "GET",
-      data: {"query": query },
-      success:
-      (data)=>
-      {
-      add_table_contents(data);
-      }
-    });
-
-    }
-
+}
 
 function toggle_contacts()
 {
@@ -279,8 +361,6 @@ function collapse_contacts()
     $('.static-contacts > .static-bottom-entry').removeClass("focuded-contacts")
 }
 
-document.addEventListener('scroll', collapse_contacts);
-
 function unsaved_check()
 {
     if ( $(".unsaved").length == 0)
@@ -300,7 +380,6 @@ function unsaved_alert(elem, not_saved)
     $(elem).removeClass('unsaved');
     unsaved_check();
 }
-
 
 function update_photo_delete_function(item_id)
 {
@@ -343,15 +422,27 @@ function handle_image_click(clicked)
 
 }
 
-
-
 function open_order_form(item_id)
 {
-    let item = the_searcher.get_item(item_id) || the_item;
-    $('#item-data').html(`<span>${item.name}</span> <span>${item.condition}</span>`)
-    $('#orderModal').modal('toggle');
-    $('#order_form_item_id').val(item_id);
+    let cb = items =>
+    {
+        let item = items[0];
+        $('#item-data').html(`<span>${item.name}</span> <span>${item.condition}</span>`)
+        $('#orderModal').modal('toggle');
+        $('#order_form_item_id').val(item_id);
+    }
+    let item = the_searcher.get_item(item_id)
+    if (!item)
+    {
+        // fetch returns list
+        the_searcher.fetch({id: item_id}, cb);
+    }
+    else
+    {
+        cb([item]);
+    }
 }
+
 function submit_order()
 {
     let myform = $('#orderModal').find('form')[0];
@@ -378,32 +469,48 @@ function gen_image_viewer(active_path, images)
     let image_icons = ''
     for (let image of images)
     {
-        image_icons += `<img src='${image}' class='img-icon ${active_path==image?'active': ""}'>`
+        image_icons += `<img src='/static/images/items/${image}' class='img-icon ${active_path==image?'active': ""}'>`
     }
 
-    return `<div id='image_viewer'>
+    return `<div id='image_viewer' onSwap='console.log("touch sawp", e.detail.direction)'>
                 <div id='close_viewer_icon'>
-                    <i style='font-size: 20px;' class="fas fa-window-close" onclick="$('#image_viewer').remove(); $('.blur').hide();"></i>
+                    <i style='font-size: 20px;' class="fas fa-window-close" onclick="hide()"></i>
                 </div>
-                <img id='image_main' src='${active_path}'>
-                <div id='viewer_controls'>
-                    <button id='viewer_prev' class='btn btn-warning'><i class="fas fa-angle-left"></i></button>
-                    <button id='viewer_next' class='btn btn-warning'><i class="fas fa-angle-right"></i></button>
-                </div>
+                <img id='image_main' src='/static/images/items/${active_path}'>
+                <div class='viewer_controls flex'>
+                    <div id='viewer_buttons'>
+                        <button id='viewer_prev' class='btn btn-warning'><i class="fas fa-angle-left"></i></button>
+                        <button id='viewer_next' class='btn btn-warning'><i class="fas fa-angle-right"></i></button>
+                    </div>
 
-                <div id='image_icons'>
-                    ${image_icons}
-                <div>
+                    <div id='image_icons'>
+                        ${image_icons}
+                    <div>
+                </div>
             </div>`
 }
 
 photos = []
 let current = null;
+function hide()
+{
+    $('#image_viewer').remove();
+    $(".blur").hide();
+    //unlock_scroll($('body'));
+    enableScroll(window);
+}
+
+function open_in_new_window(path)
+{
+    window.open(path);
+}
+
 function open_photo_view_window(elem_clicked, parent)
 {
+
     photos = []
     let current = null;
-    console.log('called open_photo_view_window')
+
     // each element of parent has tags role=image_icon and path.
 
     let i = 0;
@@ -418,22 +525,24 @@ function open_photo_view_window(elem_clicked, parent)
             current = i;
         }
         i++;
+
     }
+
     // show window
     $('body').append( gen_image_viewer(photos[current], photos) );
+    //lock_scroll($('body'));
+    disableScroll(window);
+    listen_to_swaps($('#image_viewer'), (dir)=>{if (dir == "<-")prev();else next();})
+
 
     const show = (i) =>
     {
         $('#image_viewer').find('.active').removeClass('active');
         $($('#image_viewer').find('#image_icons').children().get(i)).addClass('active');
-        $('#image_main').attr('src', photos[i]);
+        $('#image_main').attr('src', `/static/images/items/${photos[i]}`);
     }
 
-    const hide = () =>
-    {
-        $('#image_viewer').remove();
-        $(".blur").hide();
-    }
+
 
     $('body').on('keydown', e=>{if (e.key == 'Escape'){hide();}})
     $('.img-icon').on('click', e=>{show($(e.target).index())})
@@ -450,7 +559,6 @@ function open_photo_view_window(elem_clicked, parent)
     }
     const prev = ()=>
     {
-        console.log('prev')
         current--;
         if (current < 0)
         {
@@ -458,7 +566,7 @@ function open_photo_view_window(elem_clicked, parent)
         }
         show(current);
     }
-    console.log('bound next to', $('#viewer_next'))
+
     // bind handlers
     $('#viewer_prev').on('keydown', (e)=>{ if( !$('#image_viewer').length)return; console.log(e.key); if (e.key == "ArrowLeft"){prev}; if (e.key == "ArrowRight"){next}})
     $('#viewer_prev').on('click', prev);
@@ -466,6 +574,17 @@ function open_photo_view_window(elem_clicked, parent)
 
 }
 
+let sc;
+function lock_scroll(jq)
+{
+    sc = $(document).scrollTop();
+    jq.css('position', 'fixed');
+}
+function unlock_scroll(jq)
+{
+    jq.css('position', 'relative');
+    $(document).scrollTop(sc)
+}
 
 function delete_item(id)
 {
@@ -647,13 +766,19 @@ function update_fav_table(fav_items)
                                                     <button class='btn btn-warning btn-block' onclick="open_order_form(${item.id})">Заказать</button>
                                                 </td>
                                                 <td>
-                                                    <button class='btn btn-warning btn-block nowrap' onclick="the_searcher.make_query({id: ${item.id}});
-                                                    $('html, body').animate({ scrollTop: $('#split').offset().top-57 }, 1000); close_fav_table();">Открыть на странице</button>
+                                                <!--"the_searcher.make_query({id: ${item.id}});$('html, body').animate({ scrollTop: $('#split').offset().top-57 }, 1000); close_fav_table();"-->
+                                                    <a class='btn btn-warning btn-block nowrap' onclick='open_in_new_window("/item/${item.id}")'>Открыть в новом окне</a>
                                                 </td>
                                             </tr>
                                         </tbody>
                                     </table>`)
     }
+}
+
+function scroll_to(sel)
+{
+
+    $('html, body').animate({ scrollTop: $(sel).offset().top-138 }, 1000);
 }
 
 function request_photos_delete(item_id)
@@ -993,9 +1118,12 @@ function gen_user_image_bulk(paths, item_id)
 
     for (let [i, path] of paths.entries())
     {
-        if (i == 0)
-        html += `<div class='bulk_main' style='background-image: url("static/images/items/${path}");'></div>`
-        html += `<div class='bulk_item' style='background-image: url("static/images/items/${path}");'></div>`
+
+        html += `<div class='${i == 0?'bulk_main':'bulk_item'}'
+                      data-role='image_icon'
+                      data-path='${path}'
+                      onclick='handle_image_click(this)'
+                      style='background-image: url("/static/images/items/${path}");'></div>`
     }
     html += "</div>";
 
@@ -1087,10 +1215,9 @@ function gen_user_table_rows(item)
             <tr>
                 <th>
                     <p style='display: inline-block; margin: 0;'>
-                        <a style='font-size: 20px; color: white;' class='' href="/item/${item.id}" onclick='window.open("/item/${item.id}")'>${item.name}</a>
+                        <a style='font-size: 20px; color: white;' class=''>${item.name}</a>
                     </p>
-
-                        <a  class='subtitle' href="/item/${item.id}" onclick='window.open("/item/${item.id}")'>Страница предмета</a>
+                    <pre class='subtitle' onclick='open_in_new_window("/item/${item.id}")'>Открыть в новом окне</pre>
                 </th>
             </tr>
         </thead>
@@ -1346,7 +1473,9 @@ function closeAllLists(elmnt) {
   }
 }
 }
-document.addEventListener("click", function (e) {
-    console.log(e)
+
+document.addEventListener("click", function (e)
+{
     closeAllLists(e.target);
 });
+document.addEventListener('scroll', collapse_contacts);
