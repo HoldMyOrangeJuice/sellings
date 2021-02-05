@@ -25,9 +25,10 @@
 {% csrf_token %}
 <link href="{% static 'css/mobile/style.css' %}" rel="stylesheet">
 <link href="{% static 'css/mobile/sidebar.css' %}" rel="stylesheet">
-<script src="{% static 'js/mobile/test.js' %}"></script>
+<script src="{% static 'js/common/app.js' %}"></script>
 <script src="{% static 'js/listeners.js' %}"></script>
 <script src="{% static 'js/swap.js'%}"></script>
+<script src="{% static 'js/htmlgens/mobile-gen.js'%}"></script>
 
 {% include 'mobile/common/navbar.html' %}
 
@@ -42,7 +43,7 @@
         </p>
 
     <p class="text-main">
-        <a onclick="toggle_contacts()" class="big link1 noselect">
+        <a onclick="Renderer.toggle_contacts()" class="big link1 noselect">
             Контакты
         </a>
     </p>
@@ -64,7 +65,7 @@
                 <div class="pad-txt">
                     <div class="sidebar-entry-wrap">
                         <a class="cat-entry noselect"
-                           onclick="the_searcher.make_query({cat: '{{cat_id}}'})">{{category}} ({{count}})</a></div>
+                           onclick="Searcher.make_query({cat: '{{cat_id}}'})">{{category}} ({{count}})</a></div>
 
                 </div>
                 {% endfor %}
@@ -127,7 +128,7 @@ font-weight: 500;
 ">
     Что бы добавить товар в избранное, <br> нажмите на штуковину возле его названия.</p>
 
-<div id="main">
+<div id="main" class="bg-main">
     <div class="flex"><p id='empty-query-banner'></p></div>
 
     <div id="table-container">
@@ -136,13 +137,13 @@ font-weight: 500;
 </div>
 
 {% include 'mobile/common/absolute_features.html' %}
-{% include 'mobile/common/order_form.html' %}
+{% include 'order_form.html' %}
 {% include 'mobile/common/footer.html' %}
 
 <div id="not_saved_alert" style="display: none">
     <div id="nsatn">Что-то не сохранено</div>
     <div class="" style="padding: 5px 0 5px 0; background-color: #DDDDDD;">
-        <button class="btn btn-warning" onclick="save_all_unsaved()">Сохранить Все</button>
+        <button class="btn btn-warning" onclick="SaveManager.save_all_unsaved()">Сохранить Все</button>
         <button class="btn btn-danger" onclick="$('#not_saved_alert').addClass('hidden')">Игнорировать</button>
     </div>
     <div style="width: 100%; background-color: #E8E8E6; height: 5px; margin-top: 5px;"></div>
@@ -152,7 +153,7 @@ font-weight: 500;
 
 <!-- support for host?q= requests -->
 <script>
-    the_searcher.make_query({silent: true, {%if query is not None %}q: '{{query}}',{%endif%} {%if cat_id is not None %}cat: '{{cat_id}}',{%endif%} });
+    Searcher.make_query({silent: true, {%if query is not None %}q: '{{query}}',{%endif%} {%if cat_id is not None %}cat: '{{cat_id}}',{%endif%} });
 </script>
 
 </body>

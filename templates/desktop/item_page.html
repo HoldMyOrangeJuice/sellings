@@ -24,21 +24,24 @@
     {% csrf_token %}
     <link href="{% static 'css/desktop/style.css' %}" rel="stylesheet">
     <link href="{% static 'css/desktop/sidebar.css' %}" rel="stylesheet">
-    <script src="{% static 'js/desktop/test.js' %}"></script>
+    <script src="{% static 'js/common/app.js' %}"></script>
     <script src="{% static 'js/listeners.js' %}"></script>
+    <script src="{% static 'js/htmlgens/desktop-gen.js'%}"></script>
 
 </head>
-<body id="main" style="width: 100%; min-height: 100vh;">
+<body class="bg-main">
     {% include 'desktop/common/navbar.html' %}
 
     {% if item %}
         <div class="flex">
-
+        <div id="main">
             <div id="table-container">
 
             </div>
+        </div>
 
-            <button class="btn btn-dark btn-lg" onclick="open_order_form(the_searcher.items[0].id)">Заказать</button>
+
+            <button class="btn btn-dark btn-lg" onclick="Renderer.open_order_form(Searcher.items[0].id)">Заказать</button>
             <div id="split"></div>
             {% for path in item.photo_paths %}
                 <img src="/static/images/items/{{ path }}" class="illustration-big">
@@ -54,11 +57,11 @@
 
 
     <script>
-        the_searcher.make_query({id: {{item.id}} });
-        the_searcher.disabled = true;
+        Searcher.make_query({id: {{item.id}} });
+        Searcher.disabled = true;
     </script>
 {% include 'desktop/common/absolute_features.html' %}
-{% include 'desktop/common/order_form.html' %}
+{% include 'order_form.html' %}
 
 {% include 'desktop/common/footer.html' %}
 </body>

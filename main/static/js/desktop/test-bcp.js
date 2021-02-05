@@ -123,7 +123,7 @@ class Searcher
                         if (r.payload.parts == 0)
                         {
                             // empty query for first page
-                            $('#empty-query-banner').html(`Ни один предмет не подошел к запросу <br>"${ searcher.query || CATS[searcher.cat] || searcher.id }".<br><a href="#main" onclick='the_searcher.make_query({q: ""})'>Полный список</a>`)
+                            $('#empty-query-banner').html(`Ни один предмет не подошел к запросу <br>"${ searcher.query || CATS[searcher.cat] || searcher.id }".<br><a href="#main" onclick='Searcher.make_query({q: ""})'>Полный список</a>`)
                         }
                         else
                         {
@@ -152,7 +152,7 @@ class Searcher
     }
 }
 
-the_searcher = new Searcher();
+Searcher = new Searcher();
 
 
 csrf = document.getElementsByName("csrfmiddlewaretoken")[0].value
@@ -337,7 +337,7 @@ function handle_image_click(clicked)
 
 function open_order_form(item_id)
 {
-    let item = the_searcher.get_item(item_id) || the_item;
+    let item = Searcher.get_item(item_id) || the_item;
     $('#item-data').html(`<span>${item.name}</span> <span>${item.condition}</span>`)
     $('#orderModal').modal('toggle');
     $('#order_form_item_id').val(item_id);
@@ -360,7 +360,7 @@ function submit_order()
 
 function gen_order_button(item_id)
 {
-    return `<button class='btn btn-warning' onclick='open_order_form(item_id)'>Заказать</button>`;
+    return `<button class='btn btn-warning' onclick='Renderer.open_order_form(item_id)'>Заказать</button>`;
 }
 
 function gen_image_viewer(active_path, images)
@@ -593,7 +593,7 @@ function update_fav_table(fav_items)
                                         >Надо чета сделать и я не знаю,<br>
                                         как об этом написать
                                     </p>
-                                    <div onclick='close_fav_table()'
+                                    <div onclick='Renderer.close_fav_table()'
                                          id='collapse_fav_tab'>
                                          <i class="fas fa-angle-up"></i>
                                     </div>`);
@@ -606,7 +606,7 @@ function update_fav_table(fav_items)
                                     </tbody>
                                </table>
 
-                               <div onclick='close_fav_table()'
+                               <div onclick='Renderer.close_fav_table()'
                                     id='collapse_fav_tab'>
                                  <i class="fas fa-angle-up"></i>
                               </div>`)
@@ -623,10 +623,10 @@ function update_fav_table(fav_items)
                                                 ${item.condition}
                                             </td>
                                             <td>
-                                                <button class='btn btn-warning btn-block' onclick="open_order_form(${item.id})">Заказать</button>
+                                                <button class='btn btn-warning btn-block' onclick="Renderer.open_order_form(${item.id})">Заказать</button>
                                             </td>
                                             <td>
-                                                <button class='btn btn-warning btn-block nowrap' onclick="the_searcher.make_query({id: ${item.id}});
+                                                <button class='btn btn-warning btn-block nowrap' onclick="Searcher.make_query({id: ${item.id}});
                                                 $('html, body').animate({ scrollTop: $('#split').offset().top-57 }, 1000); close_fav_table();">Открыть на странице</button>
                                             </td>
                                         </tr>`)
@@ -1103,7 +1103,7 @@ function gen_user_table_rows(item)
                             ${item.fav?'<span>Убрать из корзины</span><i style="margin-left: 4px; color: gray" class="fas fa-trash-alt"></i>':
                             '<span>Добавить в корзину</span><i style="margin-left: 2px; color: gray" class="fas fa-shopping-cart"></i>'}
                         </div>
-                        <div class="dropdown-item" onclick='open_order_form(${item.id})'>
+                        <div class="dropdown-item" onclick='Renderer.open_order_form(${item.id})'>
                             <span>Заказать</span><i style='margin-left: 5px; color: gray' class="fas fa-money-check"></i>
                         </div>
                       </div>
@@ -1261,7 +1261,7 @@ $(document).ready(function()
     {
         if($(window).scrollTop() + SCREENS_TILL_FETCH * $(window).height() > $(document).height() )
         {
-           the_searcher.load_more();
+           Searcher.load_more();
         }
    });
 });
@@ -1307,11 +1307,11 @@ function textAreaAdjust(element)
 
 function query(q)
 {
-    the_searcher.make_query({q: q});
+    Searcher.make_query({q: q});
 }
 function query_cat(c)
 {
-    the_searcher.make_query({cat: c});
+    Searcher.make_query({cat: c});
 }
 
 

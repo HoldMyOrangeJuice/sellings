@@ -1,0 +1,34 @@
+<div class="modal fade" id="orderModal" tabindex="-1" role="dialog" aria-labelledby="orderModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="orderModalLabel">Новый заказ</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="item-data"></div>
+        <form>
+          <input type='hidden' name="item_id_to_order" id='order_form_item_id'>
+          <div class="form-group">
+            <label for="recipient-name" class="col-form-label">Ваше имя:</label>
+            <input type="text" class="form-control" required="required" name="username" autocomplete="off" id="recipient-name">
+          </div>
+          <div class="form-group">
+            <label for="phone" class="col-form-label">Телефон:</label>
+            <input class="form-control" name="phone" required="required" id="phone">
+          </div>
+          <div class="form-group">
+            <label for="message-text" class="col-form-label">Сообщение:</label>
+            <textarea class="form-control" name="message" required="required" id="message-text"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+        <button type="button" class="btn btn-primary" onclick="submit_order()">Отправить</button>
+      </div>
+    </div>
+  </div>
+</div>

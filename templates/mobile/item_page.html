@@ -25,17 +25,18 @@
     {% csrf_token %}
     <link href="{% static 'css/mobile/style.css' %}" rel="stylesheet">
     <link href="{% static 'css/mobile/sidebar.css' %}" rel="stylesheet">
-    <script src="{% static 'js/mobile/test.js' %}"></script>
+    <script src="{% static 'js/common/app.js' %}"></script>
     <script src="{% static 'js/listeners.js' %}"></script>
     <script src="{% static 'js/swap.js'%}"></script>
+    <script src="{% static 'js/htmlgens/mobile-gen.js'%}"></script>
 
 </head>
-<body id="main" style="width: 100%; min-height: 100vh;">
+<body class="bg-main" style="width: 100%; min-height: 100vh;">
     {% include 'mobile/common/navbar.html' %}
     {% if item %}
         <div class="flex">
-            <div id="the-table-cont"></div>
-            <button class="btn btn-dark btn-lg mb-2" onclick="open_order_form(the_item.id)"><i class="fas fa-envelope"></i> Заказать</button>
+            <div id="main"></div>
+            <button class="btn btn-dark btn-lg mb-2" onclick="Renderer.open_order_form(the_item.id)"><i class="fas fa-envelope"></i> Заказать</button>
             <div id="split"></div>
             {% for path in item.photo_paths %}
 
@@ -48,12 +49,11 @@
     {% endif %}
 
     <script>
-        const the_item = {{json_item|safe}}
-        $('#the-table-cont').html(gen_user_table_rows(the_item))
-        the_searcher.fetch_blocked = true;
+        Searcher.make_query({id: {{item.id}} });
+        Searcher.disabled = true;
     </script>
 {% include 'mobile/common/absolute_features.html' %}
-{% include 'mobile/common/order_form.html' %}
+{% include 'order_form.html' %}
 {% include 'mobile/common/footer.html' %}
 </body>
 </html>

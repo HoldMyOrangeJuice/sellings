@@ -375,9 +375,7 @@ padding: 20px 10px 20px 10px;
 }
 .img-icon
 {
-    width: 10vw;
     padding: 5px;
-    background: #EBEBEB;
     border: 1px solid #C3C6C8;
     margin: 3px;
     box-shadow: 6px 4px 18px -1px rgba(153,153,153,0.54);
@@ -513,6 +511,9 @@ padding: 20px 10px 20px 10px;
 }
 
 #main
+{
+}
+.bg-main
 {
     background: url("http://127.0.0.1:8000/static/images/wpcustom.png");
     background-size: 300px;

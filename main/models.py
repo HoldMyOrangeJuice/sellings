@@ -13,6 +13,13 @@ class Item(models.Model):
     subcats = jsonfield.JSONField(default=[])
 
 
+class Order(models.Model):
+    ip = models.CharField(max_length=100)
+    name = models.CharField(max_length=100)
+    message = models.TextField()
+    item_id = models.IntegerField()
+
+
 
 
 

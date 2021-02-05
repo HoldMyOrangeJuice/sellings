@@ -13,33 +13,35 @@
     {% endif %}
 
     <!-- Favourite -->
-    <a class="btn btn-dark nowrap dropdown-toggle" id="toggle_fav_tab_btn"  style="margin-right: 10px;" onclick="toggle_fav_tab();">
-      <span>Корзина</span>
+    <a class="btn btn-dark nowrap dropdown-toggle" id="toggle_fav_tab_btn"  style="margin-right: 10px;" onclick="Renderer.toggle_fav_tab();">
       <i class="ml-1 fas fa-shopping-cart"></i>
+      <span>Корзина</span>
     </a>
     <!-- Full List -->
     {% if render_mode == 'price_list' %}
-    <a class="btn btn-dark nowrap"  style="margin-right: 10px;" onclick="the_searcher.make_query({q:''})">
-      <span>Полный список</span>
+    <a class="btn btn-dark nowrap"  style="margin-right: 10px;" onclick="Searcher.make_query({q:''})">
       <i class="fas fa-list ml-1" style=""></i>
+      <span>Полный список</span>
     </a>
     {% elif render_mode == 'single_item' %}
     <a class="btn btn-dark nowrap"  style="margin-right: 10px;" href="/">На Главную</a>
     {% endif %}
 
     <!-- Contacts -->
-    <a class="btn btn-dark"  style="margin-right: 10px;" onclick='toggle_contacts()'>Контакты<i class="ml-1 fas fa-phone"></i></a>
-
+    <div class="btn btn-dark nowrap"  style="margin-right: 10px;" onclick='Renderer.toggle_contacts()'>
+      <i class="ml-1 fas fa-phone"></i>
+      <span>Контакты</span>
+  </div>
     <!-- Dropdown -->
     <div class="dropdown">
       <button class="btn btn-dark dropdown-toggle nowrap" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        Категории
         <i class="ml-1 fas fa-bars"></i>
+        Категории
       </button>
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
         {% for cat_id, category, count in counted_categories %}
           {% if render_mode == 'price_list' %}
-            <a class="dropdown-item noselect" href="#main" onclick="the_searcher.make_query({cat: '{{cat_id}}'})">{{category}} ({{count}})</a>
+            <a class="dropdown-item noselect" href="#main" onclick="Searcher.make_query({cat: '{{cat_id}}'})">{{category}} ({{count}})</a>
           {% elif render_mode == 'single_item' %}
             <a class="dropdown-item noselect" href="/?cat={{cat_id}}">{{category}} ({{count}})</a>
           {% endif %}
@@ -50,7 +52,7 @@
 
   <div class="nav-mid">
     <!-- Search Form -->
-    <form class="form-inline nowrap" id="search_form" onsubmit="return false">
+    <form class="form-inline" id="search_form" onsubmit="return false">
       <div style="position: relative; display: inline-block; ">
         <input id="search" class="form-control" type="search" placeholder="Поиск" autocomplete="off" aria-label="Search" value="{{query}}">
       </div>
@@ -59,7 +61,7 @@
         <script>
           function on_search_evt(e)
           {
-               the_searcher.make_query({q: $('#search').val()});
+               Searcher.make_query({q: $('#search').val()});
                $('html, body').animate({ scrollTop: $('#split').offset().top-57 }, 1000);
                document.activeElement.blur();
                return false;

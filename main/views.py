@@ -1,6 +1,7 @@
 import json
 import math
 import os
+import random
 import sys
 import uuid
 
@@ -10,7 +11,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
 from main.ajax import Response
-from main.models import Item
+from main.models import Item, Order
 
 CATEGORIES = {0: "Кухонное оборудование",
               1: "Оборудование для чая/кофе/кофе-брейка",
@@ -72,6 +73,7 @@ def gtp(request):
         return "desktop"
     return "mobile"
 
+
 def price_page(request):
     query = None
     cat_id = None
@@ -104,10 +106,8 @@ def login_view(request):
         return redirect("/")
 
 
-import re
-
-
 def mobile(request):
+    import re
     """Return True if the request comes from a mobile device."""
     MOBILE_AGENT_RE = re.compile(r".*(iphone|mobile|androidtouch)", re.IGNORECASE)
     if MOBILE_AGENT_RE.match(request.META['HTTP_USER_AGENT']):
@@ -137,18 +137,22 @@ def save_photos(request):
 
 
 def edit_item(request):
-    dir_path = os.path.dirname(os.path.realpath(__file__))
     formdata = AttrsSet(request.POST, "id_to_edit", "name", "description", "condition", "photo", "category", "subcats")
     item = Item.objects.get(id=formdata.id_to_edit)
+    subcats = json.loads(formdata.subcats)
+    if len(subcats) == 0:
+        item.delete()
+        return Response(True, "item deleted", payload={"item": {}})
+
     item.name = formdata.name
-    item.subcats = json.loads(formdata.subcats)
+    item.subcats = subcats
     item.description = formdata.description
     item.condition = formdata.condition
     item.category = get_cat_id(formdata.category)
     item.photo_paths = save_photos(request)
     item.save()
 
-    return Response(True, "edit success")
+    return Response(True, "edit success", payload={"item" : serialize_item(item=item)})
 
 
 def add_item(request):
@@ -162,7 +166,8 @@ def add_item(request):
 
         subcats = [{"price": request.POST.get("price"),
                     "amount": request.POST.get("amount"),
-                    "param": request.POST.get("param")}]
+                    "param": request.POST.get("param"),
+                    "code": request.POST.get("code")}]
 
     category = get_cat_id(request.POST.get("category"))
     filenames = save_photos(request)
@@ -218,8 +223,9 @@ def search(query=None, cat=None):
     total = 0
     DIRECT_MATCH = 500
     RATED_MATCH = 50
-    COMPLETE_MATCH = 1000
+    COMPLETE_MATCH = 5000
     MID_DIFF_BORDER = 2
+    LENGTH_IMPACT = 1
     print(f"search: {query}")
     if query is not None:
         match_map = {}
@@ -237,18 +243,18 @@ def search(query=None, cat=None):
                 for query_word in simple_query.split():
                     if name_word in query_word or query_word in name_word:
                         # print(f"word in query, add {DIRECT_MATCH * len(name_word)}")
-                        points += DIRECT_MATCH * len(name_word)
+                        points += DIRECT_MATCH * len(name_word)*LENGTH_IMPACT
                         break
                     else:
                         rate = similar(query_word, name_word)
                         # print(f"item name word {name_word} similar to {query_word}: {rate}. add {rate * RATED_MATCH * len(name_word)}")
-                        points += rate * RATED_MATCH * len(name_word)
+                        points += rate * RATED_MATCH * len(name_word)*LENGTH_IMPACT
 
             if simplify(query) in simplify(item.name):
-                # print(f'complete match: add {COMPLETE_MATCH * len(query)}')
-                points += COMPLETE_MATCH * len(query)
+                print(f'complete match: {query } in {item.name} add {COMPLETE_MATCH * len(query)}')
+                points += COMPLETE_MATCH * len(query)*LENGTH_IMPACT
             # print(f"{item.name} fits {query} as {points}")
-            points /= max(len(simple_query), 1)
+
             points = round(points)
             l = match_map.get(points) or []
             l.append(item)
@@ -284,6 +290,7 @@ def serialize_items(items=None, ids=None, session=None):
 
     return [serialize_item(item, session) for item in items]
 
+
 def flatten_item_subcat(id, subcat_idx):
     item = Item.objects.get(id=id)
     subcat = item.subcats[subcat_idx]
@@ -291,6 +298,7 @@ def flatten_item_subcat(id, subcat_idx):
     del serialized['subcats']
     serialized['param'] = subcat['param']
     serialized['price'] = subcat['price']
+    serialized['code'] = subcat.get('code')
     serialized['subcat_id'] = subcat_idx
     return serialized
 
@@ -302,6 +310,10 @@ def serialize_item(item, id=None, subcat_idx=None, session=None):
 
     entry["name"] = item.name
     entry["photo_paths"] = item.photo_paths
+    entry["description"] = item.description
+    entry["condition"] = item.condition
+    entry["id"] = item.id
+    entry["category"] = CATEGORIES.get(item.category)
 
     subcats = item.subcats
     if session:
@@ -309,22 +321,16 @@ def serialize_item(item, id=None, subcat_idx=None, session=None):
             subcat['fav'] = False
 
         if session.get('fav-ids'):
-            print(f" fav id data {session.get('fav-ids')}")
             favs = session.get('fav-ids') or {}
             for fav_idx in favs.get( str(item.id) ) or []:
-                print("subcat: ", subcats[fav_idx])
                 subcats[fav_idx]['fav'] = True
-    entry["subcats"] = item.subcats
+
     entry["subcats"] = item.subcats
 
-    entry["category"] = CATEGORIES.get(item.category)
-    entry["description"] = item.description
-    entry["condition"] = item.condition
-    entry["id"] = item.id
     return entry
 
 
-def serialize(cat=None, query=None, part=0, id=None, session=None, ids=None):
+def serialize(cat=None, query=None, part=0, id=None, session=None, ids=None, keep_order=False):
     ITEMS_PER_BATCH = 10
 
     if ids:
@@ -336,7 +342,11 @@ def serialize(cat=None, query=None, part=0, id=None, session=None, ids=None):
 
     max_parts = math.ceil(len(items) / ITEMS_PER_BATCH)
     part = items[part * ITEMS_PER_BATCH: (part + 1) * ITEMS_PER_BATCH]
-    categorized = categorize_items(part)
+    if keep_order:
+        categorized = [["ordered", items]]
+    else:
+        categorized = categorize_items(part)
+
     serialized = []
     for category, items in categorized:
         data = []
@@ -349,15 +359,13 @@ def serialize(cat=None, query=None, part=0, id=None, session=None, ids=None):
 
 
 def serialize_query(query=None, cat=None, id=None, p=0, user_session=None):
-    items, parts = serialize(query=query, cat=cat, id=id, part=p, session=user_session)
+    items, parts = serialize(query=query, cat=cat, id=id, part=p, session=user_session, keep_order=query is not None)
     return Response(success=True, message='query success', payload={'items': items, 'parts': parts})
 
 
 def save_order(item_id, username, message, ip):
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    with open(f'{dir_path}/orders.txt', "r+") as f:
-        f.read()
-        f.write(f"====\n[{item_id}]\n{username} ({ip})\n{message}\n====")
+    if item_id and username and message:
+        Order.objects.create(ip=ip, name=username, message=message, item_id=int(item_id))
 
 
 def process_order(request):
@@ -398,6 +406,7 @@ def fetch(id=None, ids=None, query=None, category=None, max_data=None, sess=None
         items.append(search(cat=category))
     print(items)
     ser = items[:max_data] if max_data != 0 else items
+
     return Response(success=True, message='fetch success', payload={'items': serialize_items(items=ser, session=sess)})
 
 
@@ -407,7 +416,7 @@ def api_view(request):
         if request.POST.get("id_to_del"):
             id_to_del = request.POST.get("id_to_del")
             Item.objects.all().filter(id=id_to_del).delete()
-            return HttpResponse("delete items client side pls")  # serialize_query(request.POST.get("q") or "").wrap()
+            return Response(success=True, message="success", payload={}).wrap()
 
         if request.POST.get("filenames_to_delete"):
             return delete_photos(request).wrap()
@@ -421,7 +430,7 @@ def api_view(request):
             return add_item(request).wrap()
 
     if request.method == "POST":
-
+        print(request.POST)
         if request.POST.get("id_to_fav") is not None \
             and request.POST.get("fav") is not None\
                 and request.POST.get("fav_idx") is not None:
@@ -459,6 +468,17 @@ def api_view(request):
             print(request.session.get('fav-ids'))
 
     if request.method == "GET":
+        if request.GET.get('api_key') and request.GET.get('api_key') == "leet":
+            command = request.GET.get('comamnd')
+            if command == 'get_orders':
+                data=""
+                for order in Order.objects.all():
+                    data += f"[{order.ip}] {order.name} ordered item {order.item_id}:\n{order.message}\n"
+
+                return HttpResponse(data)
+            return HttpResponse("request not supported")
+
+
         if request.GET.get("item_id_to_order"):
             return process_order(request).wrap()
 
@@ -531,18 +551,22 @@ def simplify(s):
 
 def load_from_xls(filename):
     import xlrd
+
     dir_path = os.path.dirname(os.path.realpath(__file__))
     print(f'{dir_path}/{filename}')
     book = xlrd.open_workbook(f'{dir_path}/{filename}')
-    sheet = book.sheet_by_index(0)
+
     # name desc cond
 
-    name_col = cat_col = 0
-    price_col = 1
-    amount_col = 2
-    param_col = 3
-    desc_col = 4
-    cond_col = 5
+    code_col = 0
+    name_col = 1
+    price_col = 2
+    amount_col = 3
+    param_col = 4
+    desc_col = 5
+    cond_col = 6
+    photos_col = 8
+
 
     class Parser:
 
@@ -552,53 +576,54 @@ def load_from_xls(filename):
             self.desc = None
             self.cond = None
             self.subcats = []
+            self.photo_paths = []
 
         def a(self):
-            for y in range(sheet.nrows):
+            for i, sheet in enumerate(book.sheets()[:3]):
+                for y in range(1, sheet.nrows):
 
-                if (sheet.cell_value(rowx=y, colx=price_col) == "") and sheet.cell_value(rowx=y,
-                                                                                         colx=cat_col) is not None:
-                    # print(f"[{y+1}] new cat: {sheet.cell_value(rowx=y, colx=0)}")
-                    if sheet.cell_value(rowx=y, colx=0) == "end":
-                        print("END REACHED")
-                        return
-                    self.cur_cat = int(sheet.cell_value(rowx=y, colx=0))
+                    self.cur_cat = i
 
-                elif sheet.cell_value(rowx=y, colx=name_col) and sheet.cell_value(rowx=y, colx=price_col) != "":
-                    # this means that entry just started, collect subcats
-                    # print(f"item done: {self.name} {self.subcats}")
-                    # print(f"[{y+1}] start of new item: {sheet.cell_value(rowx=y, colx=name_col)} {sheet.cell_value(rowx=y, colx=price_col)}")
-                    # yield prev data
-                    if self.name:
-                        yield self.name, self.desc, self.cond, self.cur_cat, self.subcats
-                    self.subcats = [{'param': sheet.cell_value(rowx=y, colx=param_col),
-                                     'price': sheet.cell_value(rowx=y, colx=price_col)}]
-                    self.name = sheet.cell_value(rowx=y, colx=name_col)
-                    self.desc = sheet.cell_value(rowx=y, colx=desc_col)
-                    self.cond = sheet.cell_value(rowx=y, colx=cond_col)
+                    if sheet.cell_value(rowx=y, colx=name_col):
+                        # this means that entry just started, collect subcats
+                        if self.name:
+                            print(self.name, self.desc, self.cond, self.cur_cat, self.subcats, self.photo_paths)
+                            yield [self.name, self.desc, self.cond, self.cur_cat, self.subcats, self.photo_paths]
 
+                        self.subcats = [{'param': sheet.cell_value(rowx=y, colx=param_col),
+                                         'price': sheet.cell_value(rowx=y, colx=price_col),
+                                         'code': sheet.cell_value(rowx=y, colx=code_col),
+                                         'amount': sheet.cell_value(rowx=y, colx=amount_col) }]
 
-                elif sheet.cell_value(rowx=y, colx=name_col) == "" and sheet.cell_value(rowx=y, colx=price_col) != "":
-                    # we are collecting subcats
-                    param = sheet.cell_value(rowx=y, colx=param_col)
-                    price = sheet.cell_value(rowx=y, colx=price_col)
-                    # print(f"[{y+1}] add subcat: {param} {price}")
+                        self.name = sheet.cell_value(rowx=y, colx=name_col)
+                        self.desc = sheet.cell_value(rowx=y, colx=desc_col)
+                        self.cond = sheet.cell_value(rowx=y, colx=cond_col)
+                        self.photo_paths = [x + ".jpg" for x in sheet.cell_value(rowx=y, colx=photos_col).split(", ")]
 
-                    self.subcats.append({"param": param, "price": price})
+                    elif sheet.cell_value(rowx=y, colx=name_col) == "" and sheet.cell_value(rowx=y, colx=price_col) != "":
+                        # we are collecting subcats
+                        param = sheet.cell_value(rowx=y, colx=param_col)
+                        price = sheet.cell_value(rowx=y, colx=price_col)
+                        code = sheet.cell_value(rowx=y, colx=code_col)
+                        amount = sheet.cell_value(rowx=y, colx=amount_col)
+
+                        self.subcats.append({"param": param, "price": price, "code": code, 'amount': amount})
+
 
     bulk = []
-    for name, desc, cond, cur_cat, subcats in Parser().a():
+    for name, desc, cond, cur_cat, subcats, photo_paths in Parser().a():
         print(name)
         bulk.append(Item(name=name, category=cur_cat, description=desc or None, condition=cond or None, subcats=subcats,
-                         photo_paths=[]))
+                         photo_paths=photo_paths))
 
     Item.objects.bulk_create(bulk)
     print(bulk)
     print(f"Done, loaded {len(bulk)} objects")
 
+#Item.objects.all().delete()
+#load_from_xls('pfrice.xls')
 
-# Item.objects.all().delete()
-# load_from_xls('price.xls')
 
 def favicon(request):
-    return HttpResponse(open('/static/favicon.ico', 'rb').read(), content_type='image/x-icon')
+    print(os.getcwd())
+    return HttpResponse(open(f'{os.getcwd()}/main/static/favicon.ico', 'rb').read(), content_type='image/x-icon')

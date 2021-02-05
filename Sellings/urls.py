@@ -16,11 +16,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, re_path
 
-from main.views import price_page, login_view, api_view, item_page, get_client_ip
+from main.views import price_page, login_view, api_view, item_page, get_client_ip, favicon
 
 urlpatterns = [
     path('', price_page),
     re_path('^item\/[0-9]*$', item_page),
     path('login', login_view),
     path('api', api_view),
+    path('favicon.ico', favicon),
 ]
