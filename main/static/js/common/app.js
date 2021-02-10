@@ -127,13 +127,12 @@ class Searcher
             // empty query for first page
             DOMManager.get_empty_query_banner().html(`Ни один предмет не подошел к запросу<br>
             "${ Searcher.query || CATS[Searcher.cat] || Searcher.id }".
-            <br><a href="#main" onclick='Searcher.make_query({q: ""})'>Полный список</a>`)
+            <br>`)
         }
         else
         {
             DOMManager.get_empty_query_banner().empty();
             Renderer.add_to_table(categorized_items);
-
         }
     }
 

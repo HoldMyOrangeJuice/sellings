@@ -6,7 +6,7 @@ class AdminNetworker extends NetworkerBase
         this.POST(form_data).then(function cb(data)
         {
             if (data.success)
-                reset_form();
+                reset_form($("#add_item_form"));
             else
                 alert("Не все поля заполнены.")
         });
@@ -275,15 +275,11 @@ function append_photo(item_id, filename, temp)
     (HtmlGen.gen_adm_photo_image_html(item_id, filename, temp))
 }
 
-function reset_form()
+function reset_form(jq)
 {
-    $("#image_label").text("")
-    $("#description").val("")
-    $("#condition").val("")
-    $("#target").removeAttr("src");
-    $("#name").val("")
-    $("#price").val("")
-    $("#amount").val("")
+    jq.find("input").val("");
+    jq.find("textarea").val("");
+    jq.find(".preview").empty();
 }
 
 function previewImage(source, target)
@@ -300,7 +296,7 @@ function previewImage(source, target)
                 html = ""
                 for (let base64 of photos)
                 {
-                    html+= `<img src=${base64}>`
+                    html+= `<img src=${base64} class='previewInstance'>`
                 }
 
                 $(target).html(

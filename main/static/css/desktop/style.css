@@ -643,3 +643,10 @@ input[type=submit] {
     max-width: 500px;
     max-height: 500px;
 }
+
+.previewInstance
+{
+    padding: 5px;
+    max-width: 200px;
+    max-height: 200px;
+}

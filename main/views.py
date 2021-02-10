@@ -13,18 +13,15 @@ from django.shortcuts import render, redirect
 from main.ajax import Response
 from main.models import Item, Order
 
-CATEGORIES = {0: "Кухонное оборудование",
-              1: "Оборудование для чая/кофе/кофе-брейка",
-              2: "Бытовая техника",
-              3: "Сервировка стола",
-              4: "Стекло для сервировки",
-              5: "Текстиль для сервировки",
-              6: "Аксессуары и расходные материалы для сервировки",
-              7: "Кухонный инвентарь",
-              8: "Посуда для приготовления пищи",
-              9: "Книги по кулинарии",
-              10: "Упаковка для транспортировки пищевых продуктов",
-              11: "Разное",
+CATEGORIES = {
+                0: "Мебель складная",
+                1: "Автомобиль",
+                2: "Кухонное оборудование",
+                3: "Все для чая/кофе",
+                4: "Сервировка стола",
+                5: "Разное",
+                6: "Расходные материалы",
+                7: "Кулинарные книги"
               }
 
 
@@ -140,9 +137,10 @@ def edit_item(request):
     formdata = AttrsSet(request.POST, "id_to_edit", "name", "description", "condition", "photo", "category", "subcats")
     item = Item.objects.get(id=formdata.id_to_edit)
     subcats = json.loads(formdata.subcats)
-    if len(subcats) == 0:
-        item.delete()
-        return Response(True, "item deleted", payload={"item": {}})
+
+    # if len(subcats) == 0:
+    #     item.delete()
+    #     return Response(True, "item deleted", payload={"item": {}})
 
     item.name = formdata.name
     item.subcats = subcats
@@ -549,81 +547,31 @@ def simplify(s):
     return s
 
 
-def load_from_xls(filename):
-    import xlrd
+def reloadData(jsonFile):
+    Item.objects.all().delete()
+    def getCat(cats, name):
+        for id_ in cats.keys():
+            if cats[id_] == name:
+                return int(id_)
+        return -1
+    import codecs
+    f = codecs.open(jsonFile, "r", "utf_8_sig")
+    data = f.read()
+    parsed = json.loads(data)
+    f.close()
+    cats = parsed.get("usedCats")
 
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    print(f'{dir_path}/{filename}')
-    book = xlrd.open_workbook(f'{dir_path}/{filename}')
-
-    # name desc cond
-
-    code_col = 0
-    name_col = 1
-    price_col = 2
-    amount_col = 3
-    param_col = 4
-    desc_col = 5
-    cond_col = 6
-    photos_col = 8
-
-
-    class Parser:
-
-        def __init__(self):
-            self.cur_cat = None
-            self.name = None
-            self.desc = None
-            self.cond = None
-            self.subcats = []
-            self.photo_paths = []
-
-        def a(self):
-            for i, sheet in enumerate(book.sheets()[:3]):
-                for y in range(1, sheet.nrows):
-
-                    self.cur_cat = i
-
-                    if sheet.cell_value(rowx=y, colx=name_col):
-                        # this means that entry just started, collect subcats
-                        if self.name:
-                            print(self.name, self.desc, self.cond, self.cur_cat, self.subcats, self.photo_paths)
-                            yield [self.name, self.desc, self.cond, self.cur_cat, self.subcats, self.photo_paths]
-
-                        self.subcats = [{'param': sheet.cell_value(rowx=y, colx=param_col),
-                                         'price': sheet.cell_value(rowx=y, colx=price_col),
-                                         'code': sheet.cell_value(rowx=y, colx=code_col),
-                                         'amount': sheet.cell_value(rowx=y, colx=amount_col) }]
-
-                        self.name = sheet.cell_value(rowx=y, colx=name_col)
-                        self.desc = sheet.cell_value(rowx=y, colx=desc_col)
-                        self.cond = sheet.cell_value(rowx=y, colx=cond_col)
-                        self.photo_paths = [x + ".jpg" for x in sheet.cell_value(rowx=y, colx=photos_col).split(", ")]
-
-                    elif sheet.cell_value(rowx=y, colx=name_col) == "" and sheet.cell_value(rowx=y, colx=price_col) != "":
-                        # we are collecting subcats
-                        param = sheet.cell_value(rowx=y, colx=param_col)
-                        price = sheet.cell_value(rowx=y, colx=price_col)
-                        code = sheet.cell_value(rowx=y, colx=code_col)
-                        amount = sheet.cell_value(rowx=y, colx=amount_col)
-
-                        self.subcats.append({"param": param, "price": price, "code": code, 'amount': amount})
-
-
-    bulk = []
-    for name, desc, cond, cur_cat, subcats, photo_paths in Parser().a():
-        print(name)
-        bulk.append(Item(name=name, category=cur_cat, description=desc or None, condition=cond or None, subcats=subcats,
-                         photo_paths=photo_paths))
+    bulk = [Item(name=x['name'],
+                 category=int(getCat(cats, x['category'])),
+                 photo_paths=x['photos'],
+                 description=x['description'],
+                 condition=x['condition'],
+                 subcats=x['subcats']) for x in parsed.get("data")]
 
     Item.objects.bulk_create(bulk)
-    print(bulk)
-    print(f"Done, loaded {len(bulk)} objects")
+    print(f"Items loaded, added {len(bulk)} entries.")
 
-#Item.objects.all().delete()
-#load_from_xls('pfrice.xls')
-
+# reloadData("E:/myFignya/programs/python/django-projects/Sellings/parse/parsed.json")
 
 def favicon(request):
-    print(os.getcwd())
     return HttpResponse(open(f'{os.getcwd()}/main/static/favicon.ico', 'rb').read(), content_type='image/x-icon')

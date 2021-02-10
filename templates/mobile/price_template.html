@@ -38,8 +38,10 @@
         <h1 class="text-header">Гаражная распродажа!!!</h1>
 
         <p class="body-text">
-            Aliquam et mauris vel magna ornare egestas. Proin dapibus vel velit at molestie. Praesent vel nunc leo. Cras dictum leo ut diam viverra gravida. Quisque non elementum tellus, eget vehicula velit. Nullam purus mauris, sollicitudin ullamcorper est sed, gravida scelerisque neque. Aenean sem eros, eleifend ornare hendrerit nec, consequat ut lectus. Maecenas sagittis nulla est. Proin mollis convallis eleifend.
-            Aenean bibendum, nisl quis semper mattis, nunc orci lobortis mi, id interdum urna est et neque.
+            Добро пожаловать на наш сайт. Здесь вы найдете оборудование для кухни, раскладную мебель,
+посуду и необходимый инвентарь для сервировки праздничного стола. Есть позиции б/у, есть
+новые. Надеемся, вы найдете для себя то, что вам нужно. Звоните, пишите. Будем рады ответить
+на ваши вопросы.
         </p>
 
     <p class="text-main">
@@ -126,7 +128,8 @@ background: linear-gradient(180deg, rgba(85,85,85,1) 0%, rgba(208,208,208,1) 10%
 color: #6A6A6A;
 font-weight: 500;
 ">
-    Что бы добавить товар в избранное, <br> нажмите на штуковину возле его названия.</p>
+    Чтобы добавить товар в избранное или оформить заказ, <br> нажмите на <i class="fas fa-ellipsis-v" style="font-size: 15px; display: inline;"></i> возле его характеристики.
+</p>
 
 <div id="main" class="bg-main">
     <div class="flex"><p id='empty-query-banner'></p></div>
@@ -134,6 +137,14 @@ font-weight: 500;
     <div id="table-container">
         <!-- to be filled with JS -->
     </div>
+</div>
+
+
+<div class="flex">
+   <a class="btn btn-dark nowrap" style="margin-right: 10px;" onclick="Searcher.make_query({q:''})">
+                <i class="fas fa-list ml-1" style=""></i>
+                <span>Полный список</span>
+            </a>
 </div>
 
 {% include 'mobile/common/absolute_features.html' %}

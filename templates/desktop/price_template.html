@@ -61,9 +61,10 @@
     <div class="flex">
         <h1 class="text-header">Гаражная распродажа!!!</h1>
 
-        <p class="body-text">
-    Aliquam et mauris vel magna ornare egestas. Proin dapibus vel velit at molestie. Praesent vel nunc leo. Cras dictum leo ut diam viverra gravida. Quisque non elementum tellus, eget vehicula velit. Nullam purus mauris, sollicitudin ullamcorper est sed, gravida scelerisque neque. Aenean sem eros, eleifend ornare hendrerit nec, consequat ut lectus. Maecenas sagittis nulla est. Proin mollis convallis eleifend.
-Aenean bibendum, nisl quis semper mattis, nunc orci lobortis mi, id interdum urna est et neque.
+        <p class="body-text">Добро пожаловать на наш сайт. Здесь вы найдете оборудование для кухни, раскладную мебель,
+посуду и необходимый инвентарь для сервировки праздничного стола. Есть позиции б/у, есть
+новые. Надеемся, вы найдете для себя то, что вам нужно. Звоните, пишите. Будем рады ответить
+на ваши вопросы.
         </p>
 
     <p class="text-main">
@@ -78,7 +79,6 @@ Aenean bibendum, nisl quis semper mattis, nunc orci lobortis mi, id interdum urn
 
 
 {% if admin %}
-
     <form id="add_item_form">
         {% csrf_token %}
         <div class="form_vert">
@@ -87,6 +87,9 @@ Aenean bibendum, nisl quis semper mattis, nunc orci lobortis mi, id interdum urn
 
             <label for="param">Характеристика</label>
             <textarea name="param" id="param" class="form-control mr-sm-2"></textarea>
+
+            <label for="code">Код</label>
+            <input name="code" id="code" class="form-control mr-sm-2">
 
             <label for="price">Цена</label>
             <input name="price" id="price" type="number" class="form-control mr-sm-2">
@@ -116,7 +119,7 @@ Aenean bibendum, nisl quis semper mattis, nunc orci lobortis mi, id interdum urn
             <p id="image_label"></p>
             <div id="target" class="preview"></div>
 
-            <button onclick="add_item()" type="button" class="btn btn-primary marg-vert">Сохранить</button>
+            <button onclick="AdminNetworker.add_item()" type="button" class="btn btn-primary marg-vert">Сохранить</button>
         </div>
     </form>
 {% endif %}
@@ -126,11 +129,19 @@ background: linear-gradient(180deg, rgba(85,85,85,1) 0%, rgba(208,208,208,1) 10%
 color: #6A6A6A;
 font-weight: 500;
 ">
-    Что бы добавить товар в избранное, <br> нажмите на штуковину возле его названия.</p>
+    Чтобы добавить товар в избранное или оформить заказ, <br> нажмите на <i class="fas fa-ellipsis-v" style="font-size: 15px; display: inline;"></i> возле его характеристики.</p>
 
 <div id="main" class="flex bg-main">
 
 </div>
+
+<div class="flex">
+   <a class="btn btn-dark nowrap" style="margin-right: 10px;" onclick="Searcher.make_query({q:''})">
+                <i class="fas fa-list ml-1" style=""></i>
+                <span>Полный список</span>
+            </a>
+</div>
+
 
 {% include 'desktop/common/absolute_features.html' %}
 {% include 'order_form.html' %}
