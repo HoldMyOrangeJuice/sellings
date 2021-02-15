@@ -421,9 +421,7 @@ class HtmlGen
         if (fav_items.length == 0)
         {
             $(`#fav_container`).append(`<p style='text-align: center; color: white;'>
-                                            Пока что тут ничего нет. <br
-                                            >Надо чета сделать и я не знаю,<br>
-                                            как об этом написать
+                                            Ваша корзина пустая.
                                         </p>
                                         <div onclick='Renderer.close_fav_table()'
                                              id='collapse_fav_tab'>

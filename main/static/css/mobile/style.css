@@ -151,7 +151,7 @@ label
 {
 width: 100%;
  padding: 2vh 5vw 5vh 5vw;
- background: url("http://127.0.0.1:8000/static/images/parchment_big.png");
+ background: url("/static/images/parchment_big.png");
 }
 
 #table-container
@@ -279,8 +279,12 @@ padding: 20px 10px 20px 10px;
 .image_bulk
 {
     display: grid;
-    grid-auto-flow: column;
+    grid-auto-flow: row;
     grid-gap: 10px;
+    grid-template-columns: var(--preview-img-size) var(--preview-img-size) var(--preview-img-size) var(--preview-img-size);
+    justify-content: center;
+    align-items: center;
+     justify-items: center;
 }
 .bulk_item
 {
@@ -292,8 +296,8 @@ padding: 20px 10px 20px 10px;
 
 .bulk_main
 {
-    width: calc( var(--preview-img-size) * 2);
-    height: calc( var(--preview-img-size) * 2);
+    width:  calc( var(--preview-img-size) * 2 + 10px);
+    height: calc( var(--preview-img-size) * 2 + 10px);
     background-size: cover;
     background-position: center center;
     grid-row: 1 / span 2;
@@ -444,7 +448,8 @@ padding: 20px 10px 20px 10px;
     top: 138px;
     left: 0;
     width: 100%;
-    background: #2B2B2B ;
+    /* background: #2B2B2B ;*/
+    background: #858179;
     transition: height 0.5s cubic-bezier(0.6,-0.1, 0.22, 1.21);
     overflow-y: scroll;
 }
@@ -515,7 +520,7 @@ padding: 20px 10px 20px 10px;
 }
 .bg-main
 {
-    background: url("http://127.0.0.1:8000/static/images/wpcustom.png");
+    background: url("/static/images/wpcustom.png");
     background-size: 300px;
 }
 

@@ -36,7 +36,7 @@
     {% if item %}
         <div class="flex">
             <div id="main"></div>
-            <button class="btn btn-dark btn-lg mb-2" onclick="Renderer.open_order_form(the_item.id)"><i class="fas fa-envelope"></i> Заказать</button>
+            <button class="btn btn-dark btn-lg mb-2" onclick="Renderer.open_order_form(Searcher.items[0].id)"><i class="fas fa-envelope"></i> Заказать</button>
             <div id="split"></div>
             {% for path in item.photo_paths %}
 
@@ -52,8 +52,8 @@
         Searcher.make_query({id: {{item.id}} });
         Searcher.disabled = true;
     </script>
-{% include 'mobile/common/absolute_features.html' %}
+{% include 'universal/absolute_features.html' %}
 {% include 'order_form.html' %}
-{% include 'mobile/common/footer.html' %}
+{% include 'universal/footer.html' %}
 </body>
 </html>
