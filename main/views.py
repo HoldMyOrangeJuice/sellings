@@ -339,11 +339,12 @@ def serialize(cat=None, query=None, part=0, id=None, session=None, ids=None, kee
         items = search(cat=cat, query=query)
 
     max_parts = math.ceil(len(items) / ITEMS_PER_BATCH)
-    part = items[part * ITEMS_PER_BATCH: (part + 1) * ITEMS_PER_BATCH]
+    part_of_items = items[part * ITEMS_PER_BATCH: (part + 1) * ITEMS_PER_BATCH]
+
     if keep_order:
-        categorized = [["ordered", items]]
+        categorized = [["ordered", part_of_items]]
     else:
-        categorized = categorize_items(part)
+        categorized = categorize_items(part_of_items)
 
     serialized = []
     for category, items in categorized:
@@ -571,7 +572,7 @@ def reloadData(jsonFile):
     Item.objects.bulk_create(bulk)
     print(f"Items loaded, added {len(bulk)} entries.")
 
-# reloadData("E:/myFignya/programs/python/django-projects/Sellings/parse/parsed.json")
+#reloadData("E:/myFignya/programs/python/django-projects/Sellings/parse/parsed.json")
 
 def favicon(request):
     return HttpResponse(open(f'{os.getcwd()}/main/static/favicon.ico', 'rb').read(), content_type='image/x-icon')

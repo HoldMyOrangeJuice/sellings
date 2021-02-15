@@ -1,8 +1,27 @@
 <div id="fav_container" style="height: 0px;"></div>
 <div class="blur" style="display: none"></div>
 
-<div class="static-contacts" onclick="Renderer.toggle_contacts()">
-    <p class="static-bottom-entry">095 903 23 10</p>
-    <p class="static-bottom-entry">068 785 68 25</p>
-    <p class="static-bottom-entry">vfo@ukr.net</p>
+<div id="toggleContacts" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Контакты</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body flex">
+         <p style="font-size: 40px">095 903 23 10</p>
+        <p style="font-size: 40px">068 785 68 25</p>
+        <p style="font-size: 40px" >vfo@ukr.net</p>
+      </div>
+
+      <div class="modal-footer">
+<!--        <button type="button" class="btn btn-primary">Save changes</button>-->
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+      </div>
+    </div>
+  </div>
 </div>
+

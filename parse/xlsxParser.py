@@ -19,6 +19,7 @@ def parse(sheet):
     item = {}
     items = []
     for y in range(1, sheet.nrows):
+
         code = val(sheet, 0, y)
         name = val(sheet, 1, y)
         price = val(sheet, 2, y)
@@ -35,20 +36,16 @@ def parse(sheet):
             current += 1
             continue
 
-        if name == "" and param != "":
+        elif name != "":
 
-            subcats = item.get('subcats')
-
-            subcats.append(genSub(param, code, amount, price))
-
-            item['subcats'] = subcats
-        else:
+            # skip first
             if item.get('name'):
                 items.append(item)
-            else:
-                print(f"[{y}] skip addition of item: {item}")
+                print(f"skip empty [{y}]")
+
             if name == "":
                 print(f"[{y}] not valid item")
+                item = {}
                 continue
 
             item = {'name': name,
@@ -58,6 +55,13 @@ def parse(sheet):
                     "category": cat,
                     "subcats": [genSub(param, code, amount, price)]
                     }
+
+        elif param != "":
+            subcats = item.get('subcats')
+
+            subcats.append(genSub(param, code, amount, price))
+
+            item['subcats'] = subcats
 
     return items, cats
 

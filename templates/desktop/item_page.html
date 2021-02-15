@@ -27,6 +27,7 @@
     <script src="{% static 'js/common/app.js' %}"></script>
     <script src="{% static 'js/listeners.js' %}"></script>
     <script src="{% static 'js/htmlgens/desktop-gen.js'%}"></script>
+    <script src="{% static 'js/swap.js' %}"></script>
 
 </head>
 <body class="bg-main">
@@ -60,9 +61,11 @@
         Searcher.make_query({id: {{item.id}} });
         Searcher.disabled = true;
     </script>
-{% include 'desktop/common/absolute_features.html' %}
+
+{% include 'universal/absolute_features.html' %}
 {% include 'order_form.html' %}
 
-{% include 'desktop/common/footer.html' %}
+{% include 'universal/footer.html' %}
+
 </body>
 </html>

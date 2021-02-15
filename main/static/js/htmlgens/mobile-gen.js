@@ -112,15 +112,19 @@ class HtmlGen
     }
     static gen_usr_subcat(item_id, subcat_id, code, param, price, amount, fav)
     {
-        return`
+        return`${param?
+            `<tr>
+            <td colspan=4 style="font-weight: 600">
+                ${param || DEF_BLANK_VAL_TEXT}
+            </td>
+        </tr>`:""
+    }
+
+
         <tr class='${fav?'fav':''}' data-subcat_id='${subcat_id}' data-item_id='${item_id}' data-role='subcat_cont'>
 
             <td>
                 ${code || DEF_BLANK_VAL_TEXT}
-            </td>
-
-            <td>
-                ${param || DEF_BLANK_VAL_TEXT}
             </td>
 
             <td>
@@ -154,7 +158,7 @@ class HtmlGen
         let html = ""
         for (let [idx, subcat] of subcats.entries())
         {
-            html += HtmlGen.gen_subcats_table(item_id, idx, subcat.code, subcat.param, subcat.price, subcat.amount, subcat.fav)
+            html += HtmlGen.gen_subcat(item_id, idx, subcat.code, subcat.param, subcat.price, subcat.amount, subcat.fav)
         }
         return `<table border="0" data-subcat_table='${item_id}' style='width: 100%'>
             <tbody>
@@ -311,23 +315,33 @@ class HtmlGen
             </thead>
 
             <tbody>
-                <tr>
-                    <td style='color: gray; padding: 1vh 4vw 1vh 4vw; font-weight: 100; font-size: small;'>
-                    ${item.description || DEF_BLANK_VAL_TEXT}
-                    </td>
-                </tr>
+                ${item.description?`
+                    <tr>
+                        <td style='color: gray; padding: 1vh 4vw 1vh 4vw; font-weight: 100; font-size: small;'>
+                            ${item.description || DEF_BLANK_VAL_TEXT}
+                        </td>
+                    </tr>`:''}
 
-                <tr><td class='flex'>${HtmlGen.gen_image_bulk(item.photo_paths, item.id)}</td></tr>
+                ${item.photo_paths.length?
+                    `<tr>
+                        <td class='flex'>
+                            ${HtmlGen.gen_image_bulk(item.photo_paths, item.id)}
+                        </td>
+                </tr>`:''}
+
                 <tr>
                     <td>
                         ${HtmlGen.gen_subcats_table(item.subcats, item.id)}
                     </td>
                 </tr>
-                <tr>
+
+                ${item.condition?
+                `<tr>
                     <td>
-                        Состояние ${item.condition || DEF_BLANK_VAL_TEXT}
+                        Состояние:<br>${item.condition || DEF_BLANK_VAL_TEXT}
                     </td>
-                </tr>
+                </tr>`:""}
+
 
             </tbody>
 
@@ -373,9 +387,7 @@ class HtmlGen
         if (fav_items.length == 0)
         {
             $(`#fav_container`).append(`<p style='text-align: center; color: white;'>
-                                            Пока что тут ничего нет. <br
-                                            >Надо чета сделать и я не знаю,<br>
-                                            как об этом написать
+                                            Ваша корзина пустая.
                                         </p>
                                         <div onclick='Renderer.close_fav_table()'
                                              id='collapse_fav_tab'>

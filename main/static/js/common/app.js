@@ -386,14 +386,20 @@ class Renderer
 
     static stretch_contacts()
     {
-        $('.static-contacts').css('height', '300px');
-        $('.static-contacts > .static-bottom-entry').addClass("focuded-contacts")
+        //$('.static-contacts').css('height', '300px');
+        //$('.static-contacts > .static-bottom-entry').addClass("focuded-contacts")
+        $('#toggleContacts').modal({
+        show: true
+        });
     }
 
     static collapse_contacts()
     {
-        $('.static-contacts').css('height', '45px');
-        $('.static-contacts > .static-bottom-entry').removeClass("focuded-contacts")
+        $('#toggleContacts').modal({
+        show: false
+        });
+        //$('.static-contacts').css('height', '45px');
+        //$('.static-contacts > .static-bottom-entry').removeClass("focuded-contacts")
     }
 
     static open_order_form(item_id)
