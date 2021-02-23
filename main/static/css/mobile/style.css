@@ -151,7 +151,7 @@ label
 {
 width: 100%;
  padding: 2vh 5vw 5vh 5vw;
- background: url("/static/images/parchment_big.png");
+ background: url("/static/images/parchment_big.webp");
 }
 
 #table-container
@@ -520,7 +520,7 @@ padding: 20px 10px 20px 10px;
 }
 .bg-main
 {
-    background: url("/static/images/wpcustom.png");
+    background: url("/static/images/wpcustom.webp");
     background-size: 300px;
 }
 

@@ -9,7 +9,8 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-
+import json
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,7 +26,7 @@ SECRET_KEY = 'd^l#gfvx%d^55@*pc^&jxvfoquxk4gy_$^o7o%9)823nb&yb-v'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["qwertty.com", "127.0.0.1"]
+ALLOWED_HOSTS = ["dom21.zp.ua", "127.0.0.1"]
 
 
 # Application definition
@@ -119,3 +120,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+cfg = json.load(open(f"{os.getcwd()}/main/settings.json"))
+
+DEFAULT_FROM_EMAIL = "rastaprices@gmail.com"
+SERVER_EMAIL = "rastaprices@gmail.com"
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = "rastaprices@gmail.com"
+EMAIL_HOST_PASSWORD = cfg.get("password")
+EMAIL_PORT = 587
+

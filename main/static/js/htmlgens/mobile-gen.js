@@ -72,7 +72,7 @@ class HtmlGen
                     '<span>Убрать из корзины</span><i style="margin-left: 4px; color: gray" class="fas fa-trash-alt"></i>':
                     '<span>Добавить в корзину</span><i style="margin-left: 2px; color: gray" class="fas fa-shopping-cart"></i>'}
             </div>
-            <div class="dropdown-item" onclick='Renderer.open_order_form(${item_id})'>
+            <div class="dropdown-item" onclick='Renderer.open_order_form(${item_id}, ${subcat_id})'>
                 <span>Заказать</span><i style='margin-left: 5px; color: gray' class="fas fa-money-check"></i>
             </div>
           </div>
@@ -226,7 +226,7 @@ class HtmlGen
                           data-role='image_icon'
                           data-path='${path}'
                           onclick='handle_image_click(this)'
-                          style='background-image: url("/static/images/items/${path}");'></div>`
+                          style='background-image: url("/static/images/min/${path}");'></div>`
         }
         html += "</div>";
 
@@ -409,35 +409,36 @@ class HtmlGen
                                       </div>`)
         for (let item of fav_items)
         {
-            $(`#fav-items-cont`).append(`<table class='table table-bordered'>
-                                            <thead class='thead thead-dark'>
-                                                <tr>
-                                                    <th colspan='2'>
-                                                        ${item.name}
-                                                    </th>
-                                                </tr>
-                                            </thead>
+            $(`#fav-items-cont`).append(
+                `<table class='table table-bordered'>
+                    <thead class='thead thead-dark'>
+                        <tr>
+                            <th colspan='2'>
+                                ${item.name}
+                            </th>
+                        </tr>
+                    </thead>
 
-                                            <tbody>
-                                                <tr>
-                                                    <td colspan='2'>
-                                                        <table>
-                                                            ${HtmlGen.gen_subcat(item.id, item.subcat_id, item.code, item.param, item.price, item.amount, true)}
-                                                        </table>
-                                                    </td>
-                                                </tr>
+                    <tbody>
+                        <tr>
+                            <td colspan='2'>
+                                <table>
+                                    ${HtmlGen.gen_subcat(item.id, item.subcat_id, item.code, item.param, item.price, item.amount, true)}
+                                </table>
+                            </td>
+                        </tr>
 
-                                                <tr>
-                                                    <td>
-                                                        <button class='btn btn-warning btn-block' onclick="Renderer.open_order_form(${item.id})">Заказать</button>
-                                                    </td>
-                                                    <td>
-                                                    <!--"Searcher.make_query({id: ${item.id}});$('html, body').animate({ scrollTop: $('#split').offset().top-57 }, 1000); close_fav_table();"-->
-                                                        <a class='btn btn-warning btn-block nowrap' onclick='PageActions.open_in_new_window("/item/${item.id}")'>Открыть в новом окне</a>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>`)
+                        <tr>
+                            <td>
+                                <button class='btn btn-warning btn-block' onclick="Renderer.open_order_form(${item.id}, ${item.subcat_id})">Заказать</button>
+                            </td>
+                            <td>
+                            <!--"Searcher.make_query({id: ${item.id}});$('html, body').animate({ scrollTop: $('#split').offset().top-57 }, 1000); close_fav_table();"-->
+                                <a class='btn btn-warning btn-block nowrap' onclick='PageActions.open_in_new_window("/item/${item.id}")'>Открыть в новом окне</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>`)
         }
     }
 

@@ -1,3 +1,4 @@
+let dark = false;
 class HtmlGen
 {
 
@@ -64,7 +65,7 @@ class HtmlGen
                     '<span>Убрать из корзины</span><i style="margin-left: 4px; color: gray" class="fas fa-trash-alt"></i>':
                     '<span>Добавить в корзину</span><i style="margin-left: 2px; color: gray" class="fas fa-shopping-cart"></i>'}
             </div>
-            <div class="dropdown-item" onclick='Renderer.open_order_form(${item_id})'>
+            <div class="dropdown-item" onclick='Renderer.open_order_form(${item_id}, ${subcat_id})'>
                 <span>Заказать</span><i style='margin-left: 5px; color: gray' class="fas fa-money-check"></i>
             </div>
           </div>
@@ -84,14 +85,14 @@ class HtmlGen
                    data-item_id='${item_id}'
                    data-role='subcat_code'
                    class='text-form-trackable edit-form input-int'
-                   value=${code}>
+                   value=${code || DEF_BLANK_VAL_TEXT}>
             </td>
 
             <td title="Параметр">
                 <input data-subcat_id='${subcat_id}'
                        data-item_id='${item_id}'
                        data-role='subcat_param'
-                       class='text-form-trackable edit-form input-text' value=${param}>
+                       class='text-form-trackable edit-form input-text' value=${param || DEF_BLANK_VAL_TEXT}>
             </td>
 
             <td title="Цена">
@@ -99,7 +100,7 @@ class HtmlGen
                     <input data-subcat_id='${subcat_id}'
                            data-item_id='${item_id}'
                            data-role='subcat_price'
-                           class='text-form-trackable edit-form input-int' value=${price}>
+                           class='text-form-trackable edit-form input-int' value=${price || 0}>
                 </span>
             </td>
 
@@ -108,7 +109,7 @@ class HtmlGen
                     <input data-subcat_id='${subcat_id}'
                            data-item_id='${item_id}'
                            data-role='subcat_amount'
-                           class='text-form-trackable edit-form input-int' value=${amount}>
+                           class='text-form-trackable edit-form input-int' value=${amount || 0}>
                 </span>
             </td>
 
@@ -136,14 +137,14 @@ class HtmlGen
 
             <td title="Цена">
                 <span class='nowrap'>
-                    ${price || 0} грн.
+                    ${price || "?"} грн.
                 </span>
             </td>
 
             <!--
             <td>
                 <span class='nowrap'>
-                    ${amount || DEF_BLANK_VAL_NUM} шт.
+                    ${amount || "?"} шт.
                 </span>
             </td>
             -->
@@ -171,11 +172,12 @@ class HtmlGen
         {
             html += HtmlGen.gen_subcat(item_id, idx, subcat.code, subcat.param, subcat.price, subcat.amount, subcat.fav)
         }
-        return `<table border="0" data-subcat_table='${item_id}' style='width: 100%'>
-            <tbody>
-                ${html}
-            </tbody>
-        </table>`;
+        return `<div class=''>
+                <table border="0" data-subcat_table='${item_id}' style='max-width: 50%'>
+                <tbody>
+                    ${html}
+                </tbody>
+                </table></div>`;
     }
 
     static gen_adm_photo_image_html(item_id, file, temp)
@@ -250,11 +252,16 @@ class HtmlGen
                 img_style = "bulk_item";
             }
 
+            //tset
+            img_style = "bulk_item";
+            let cont_width = $("#table-container").width() - paths.length * 40;
+            let side = Math.min(200, cont_width/paths.length);
+            console.log(side);
             html += `<div class='${img_style}'
+                          style='width: ${side}px; height: ${side}px; background-image: url("/static/images/min/${path}");'
                           data-role='image_icon'
                           data-path='${path}'
-                          onclick='handle_image_click(this)'
-                          style='background-image: url("/static/images/items/${path}");'></div>`
+                          onclick='handle_image_click(this)'></div>`
         }
         html += "</div>";
 
@@ -329,27 +336,30 @@ class HtmlGen
 
     static gen_usr_frame_entry(item)
     {
+        dark = !dark;
         return `
-                <tr>
-                    <td title="Открыть в новой вкладке">
+                <tr class='${dark?"td-dark":""}'>
+                    <td title="Открыть в новой вкладке" style="font-weight: 600">
                         <a class='link' onclick='PageActions.open_in_new_window("/item/${item.id}")'>
                             ${item.name}
                         </a>
                     </td>
-                    <td title="Описание">
-                        ${item.description || DEF_BLANK_VAL_TEXT}
-                    </td>
-
-                    <td title="Изображения">
-                        ${HtmlGen.gen_image_bulk(item.photo_paths, item.id)}
-                    </td>
 
                     <td title="Подкатегории">
+
                         ${HtmlGen.gen_subcats_table(item.subcats, item.id)}
                     </td>
 
-                    <td title="Состояние">
+                    <td title="Состояние" class='p-3'>
                         Состояние ${item.condition || DEF_BLANK_VAL_TEXT}
+                    </td>
+
+                    <td class='p-4'>${item.description || DEF_BLANK_VAL_TEXT}</td>
+                </tr>
+
+                <tr class='${dark?"td-dark":""} photo-row'>
+                    <td title="Изображения" colspan='4'>
+                        ${HtmlGen.gen_image_bulk(item.photo_paths, item.id)}
                     </td>
                 </tr>`
     }
@@ -371,15 +381,14 @@ class HtmlGen
         return `
         <div class='flex body-main-content'><h3 class='mb-4'>${category}</h3></div>
         <div class='body-main-content' >
-        <table class='table table-bordered'>
+        <table class='table table-bordered table-stripped'>
 
             <thead class='thead thead-dark'>
                 <tr>
-                <th>Название</th>
-                <th>Описание</th>
-                <th>Фото</th>
-                <th>Характеристики</th>
-                <th>Состояние</th>
+                <th>${LANG.name}</th>
+                <th>${LANG.cats}</th>
+                <th>${LANG.cond}</th>
+                <th>${LANG.desc}</th>
                 </tr>
             </thead>
 
@@ -400,17 +409,27 @@ class HtmlGen
 
     static gen_mono_frame()
     {
-        return `<table class='table table-bordered'>
-                <thead class='thead thead-dark'>
-                    <tr>
-                    <th>Название</th>
-                    <th>Описание</th>
-                    <th>${ADMIN?"Фото":"Категория"}</th>
-                    <th>Характеристики</th>
-                    <th>Состояние</th>
-                    ${ADMIN?"<th>Удалить</th>": ""}
-                    </tr>
-                </thead>
+        let thead = ADMIN?`<thead class='thead thead-dark'>
+            <tr>
+            <th>Название</th>
+            <th>Описание</th>
+            <th>Фото</th>
+            <th>Характеристики</th>
+            <th>Состояние</th>
+            <th>Удалить</th>
+            </tr>
+        </thead>`:
+        `<thead class='thead thead-dark'>
+            <tr>
+            <th>Название</th>
+            <th>Описание</th>
+            <th>Состояние</th>
+            <th>Характеристики</th>
+            </tr> 
+        </thead>`
+
+        return `<table class='table table-bordered table-stripped'>
+                ${thead}
                 <tbody id='mono-table'>
                 </tbody>
                 </table>`;
@@ -443,35 +462,36 @@ class HtmlGen
                                       </div>`)
         for (let item of fav_items)
         {
-            $(`#fav-items-cont`).append(`<table class='table table-bordered'>
-                                            <thead class='thead thead-dark'>
-                                                <tr>
-                                                    <th colspan='3'>
-                                                        ${item.name}
-                                                    </th>
-                                                </tr>
-                                            </thead>
+            $(`#fav-items-cont`).append(
+                `<table class='table table-bordered'>
+                    <thead class='thead thead-dark'>
+                        <tr>
+                            <th colspan='3'>
+                                ${item.name}
+                            </th>
+                        </tr>
+                    </thead>
 
-                                            <tbody>
-                                                <tr>
-                                                    <td colspan='2'>
-                                                        <table>
-                                                            ${HtmlGen.gen_subcat(item.id, item.subcat_id, item.code, item.param, item.price, item.amount, true)}
-                                                        </table>
-                                                    </td>
-                                                    <td>${item.description || DEF_BLANK_VAL_TEXT}</td>
-                                                </tr>
+                    <tbody>
+                        <tr>
+                            <td colspan='2'>
+                                <table>
+                                    ${HtmlGen.gen_subcat(item.id, item.subcat_id, item.code, item.param, item.price, item.amount, true)}
+                                </table>
+                            </td>
+                            <td>${item.description || DEF_BLANK_VAL_TEXT}</td>
+                        </tr>
 
-                                                <tr>
+                        <tr>
 
-                                                    <td colspan='3'>
-                                                    <button class='btn btn-warning btn-lg' onclick="Renderer.open_order_form(${item.id})">Заказать</button>
+                            <td colspan='3'>
+                            <button class='btn btn-warning btn-lg' onclick="Renderer.open_order_form(${item.id}, ${item.subcat_id})">Заказать</button>
 
-                                                        <a class='btn btn-warning btn-lg nowrap' onclick='PageActions.open_in_new_window("/item/${item.id}")'>Открыть в новом окне</a>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>`)
+                                <a class='btn btn-warning btn-lg nowrap' onclick='PageActions.open_in_new_window("/item/${item.id}")'>Открыть в новом окне</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>`)
         }
     }
 

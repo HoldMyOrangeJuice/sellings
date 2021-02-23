@@ -1,169 +1,187 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <!-- JQuery -->
-     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <head>
+         <meta charset="UTF-8">
+         <title>Распродажа б/у оборудования и предметов сервировки для дома и HoReCa</title>
+         <!-- JQuery -->
+         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
-    <!--  Google Fonts  -->
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300&family=Oswald:wght@200;300;500&display=swap" rel="stylesheet">
+        {% load static  %}
+        {% csrf_token %}
+        <!-- Main style sheet -->
+        <link href="{% static 'css/desktop/style.css' %}" rel="stylesheet">
+        <link href="{% static 'css/desktop/sidebar.css' %}" rel="stylesheet">
+    </head>
 
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
+    <body>
 
-    <!-- Bootstrap -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+        {% include 'desktop/common/navbar.html' %}
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-</head>
-<body>
-{% load static %}
-{% csrf_token %}
-<link href="{% static 'css/desktop/style.css' %}" rel="stylesheet">
-<link href="{% static 'css/desktop/sidebar.css' %}" rel="stylesheet">
+        <div class="body-main">
 
-<script src="{% static 'js/common/adminGen.js' %}"></script>
-<script src="{% static 'js/htmlgens/desktop-gen.js'%}"></script>
-<script src="{% static 'js/common/app.js' %}"></script>
-<script src="{% static 'js/common/admin.js' %}"></script>
-<script src="{% static 'js/listeners.js' %}"></script>
-<script src="{% static 'js/swap.js' %}"></script>
+            <div>
+                <!-- Sidebar -->
+                <div id="sidebar-wrapper">
+                    <div class="sidebar-nav">
 
-{% include 'desktop/common/navbar.html' %}
+                        <p class="sidebar-brand">
+                            <a href="#">Категории</a>
+                        </p>
 
-<div class="body-main">
+                        <hr>
 
-    <div>
-        <!-- Sidebar -->
-        <div id="sidebar-wrapper">
-            <div class="sidebar-nav">
+                        {% for cat_id, category, count in counted_categories %}
+                        <div class="pad-txt">
+                            <div class="sidebar-entry-wrap"><a class="cat-entry noselect" href="#main" onclick="Searcher.make_query({cat: '{{cat_id}}'})">{{category}} ({{count}})</a></div>
 
-                <p class="sidebar-brand">
-                    <a href="#">Категории</a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <!--/sidebar-->
+            </div>
+
+            <div class="flex">
+        <!--        <h1 class="text-header">Гаражная распродажа!!!</h1>-->
+        <h2>Распродажа складной мебели, б/у оборудования для кухни и предметов сервировки для дома и HoReCa</h2>
+                <p class="body-text">
+                    Распродажа складной мебели, б/у оборудования для кухни и предметов сервировки для дома и HoReCa
+                    <br/>
+                    Добро пожаловать на наш сайт. Здесь вы найдете оборудование для кухни, раскладную мебель,
+        посуду и необходимый инвентарь для сервировки праздничного стола. Есть позиции б/у, есть
+        новые. Надеемся, вы найдете для себя то, что вам нужно. Звоните, пишите. Будем рады ответить
+        на ваши вопросы.
                 </p>
 
-                <hr>
-
-                {% for cat_id, category, count in counted_categories %}
-                <div class="pad-txt">
-                    <div class="sidebar-entry-wrap"><a class="cat-entry noselect" href="#main" onclick="Searcher.make_query({cat: '{{cat_id}}'})">{{category}} ({{count}})</a></div>
-
+                <div class="flex">
+                    <h3 style="color: white;">Контакты</h3>
+                    <p class="static-bottom-entry">095 903 23 10</p>
+                <p class="static-bottom-entry">068 785 68 25</p>
+                <p class="static-bottom-entry">vfo@ukr.net</p>
                 </div>
-                {% endfor %}
+
+
             </div>
-        </div>
-        <!--/sidebar-->
-    </div>
 
-    <div class="flex">
-<!--        <h1 class="text-header">Гаражная распродажа!!!</h1>-->
-
-        <p class="body-text">Добро пожаловать на наш сайт. Здесь вы найдете оборудование для кухни, раскладную мебель,
-посуду и необходимый инвентарь для сервировки праздничного стола. Есть позиции б/у, есть
-новые. Надеемся, вы найдете для себя то, что вам нужно. Звоните, пишите. Будем рады ответить
-на ваши вопросы.
-        </p>
-
-        <div class="flex">
-            <h3 style="color: white;">Контакты</h3>
-            <p class="static-bottom-entry">095 903 23 10</p>
-        <p class="static-bottom-entry">068 785 68 25</p>
-        <p class="static-bottom-entry">vfo@ukr.net</p>
         </div>
 
 
-    </div>
+        {% if admin %}
+            <form id="add_item_form">
+                {% csrf_token %}
+                <div class="form_vert">
+                    <label for="name">Название</label>
+                    <input name="name" id="name" class="form-control mr-sm-2">
 
-</div>
+                    <label for="param">Характеристика</label>
+                    <textarea name="param" id="param" class="form-control mr-sm-2"></textarea>
 
+                    <label for="code">Код</label>
+                    <input name="code" id="code" class="form-control mr-sm-2">
 
-{% if admin %}
-    <form id="add_item_form">
-        {% csrf_token %}
-        <div class="form_vert">
-            <label for="name">Название</label>
-            <input name="name" id="name" class="form-control mr-sm-2">
+                    <label for="price">Цена</label>
+                    <input name="price" id="price" type="number" class="form-control mr-sm-2">
 
-            <label for="param">Характеристика</label>
-            <textarea name="param" id="param" class="form-control mr-sm-2"></textarea>
-
-            <label for="code">Код</label>
-            <input name="code" id="code" class="form-control mr-sm-2">
-
-            <label for="price">Цена</label>
-            <input name="price" id="price" type="number" class="form-control mr-sm-2">
-
-            <label for="amount">Кол-во</label>
-            <input name="amount" id="amount" class="form-control mr-sm-2">
+                    <label for="amount">Кол-во</label>
+                    <input name="amount" id="amount" class="form-control mr-sm-2">
 
 
 
-            <label for="category">Категория</label>
-            <select name="category" id="category" class="form-control mr-sm-2">
-                 {% for _, category, _ in counted_categories %}
-                 <option>
-                     {{ category }}
-                 </option>
-                 {% endfor %}
-             </select>
+                    <label for="category">Категория</label>
+                    <select name="category" id="category" class="form-control mr-sm-2">
+                         {% for _, category, _ in counted_categories %}
+                         <option>
+                             {{ category }}
+                         </option>
+                         {% endfor %}
+                     </select>
 
-            <label for="description">Описание</label>
-            <textarea name="description" id="description" rows="8"></textarea>
+                    <label for="description">Описание</label>
+                    <textarea name="description" id="description" rows="8"></textarea>
 
-            <label for="condition">Состояние</label>
-            <input name="condition" id="condition" class="form-control mr-sm-2">
+                    <label for="condition">Состояние</label>
+                    <input name="condition" id="condition" class="form-control mr-sm-2">
 
-            <label for="file">Фото</label>
-            <input type="file" multiple="multiple" class="hidden" name="photo" id="file"><label class="btn btn-primary marg-vert" for="file">Выбрать файл</label>
-            <p id="image_label"></p>
-            <div id="target" class="preview"></div>
+                    <label for="file">Фото</label>
+                    <input type="file" multiple="multiple" class="hidden" name="photo" id="file"><label class="btn btn-primary marg-vert" for="file">Выбрать файл</label>
+                    <p id="image_label"></p>
+                    <div id="target" class="preview"></div>
 
-            <button onclick="AdminNetworker.add_item()" type="button" class="btn btn-primary marg-vert">Сохранить</button>
+                    <button onclick="AdminNetworker.add_item()" type="button" class="btn btn-primary marg-vert">Сохранить</button>
+                </div>
+            </form>
+        {% endif %}
+
+        <p class='flex noselect' id="split" style="margin: 0; padding: 15px 0 15px 0; box-shadow: 0px 5px 13px 10px rgba(0,0,0,0.53);
+        background: linear-gradient(180deg, rgba(85,85,85,1) 0%, rgba(208,208,208,1) 10%, rgba(249,249,249,1) 18%, rgba(244,244,246,1) 78%, rgba(218,218,218,1) 86%, rgba(130,130,130,1) 100%);
+        color: #6A6A6A;
+        font-weight: 500;
+        ">
+            Чтобы добавить товар в избранное или оформить заказ, <br>
+            нажмите на <i class="fas fa-ellipsis-v" style="font-size: 15px; display: inline;"></i>
+            возле его характеристики.</p>
+        <div class="bg-main">
+
+        <div id="main" class="flex">
+
         </div>
-    </form>
-{% endif %}
 
-<p class='flex noselect' id="split" style="margin: 0; padding: 15px 0 15px 0; box-shadow: 0px 5px 13px 10px rgba(0,0,0,0.53);
-background: linear-gradient(180deg, rgba(85,85,85,1) 0%, rgba(208,208,208,1) 10%, rgba(249,249,249,1) 18%, rgba(244,244,246,1) 78%, rgba(218,218,218,1) 86%, rgba(130,130,130,1) 100%);
-color: #6A6A6A;
-font-weight: 500;
-">
-    Чтобы добавить товар в избранное или оформить заказ, <br> нажмите на <i class="fas fa-ellipsis-v" style="font-size: 15px; display: inline;"></i> возле его характеристики.</p>
-
-<div id="main" class="flex bg-main">
-
-</div>
-
-<div class="flex">
-   <a class="btn btn-dark nowrap" style="margin-right: 10px;" onclick="Searcher.make_query({q:''})">
+        <div class="flex pb-4">
+            <a class="btn btn-dark nowrap" style="margin-right: 10px;" onclick="Searcher.make_query({q:''})">
                 <i class="fas fa-list ml-1" style=""></i>
                 <span>Полный список</span>
             </a>
-</div>
+        </div>
 
-
-{% include 'universal/absolute_features.html' %}
-{% include 'order_form.html' %}
-{% include 'universal/footer.html' %}
-
-<div id="not_saved_alert" style="display: none">
-    <div id="nsatn">Что-то не сохранено</div>
-    <div class="" style="padding: 5px 0 5px 0; background-color: #DDDDDD;">
-        <button class="btn btn-warning" onclick="SaveManager.save_all_unsaved()">Сохранить Все</button>
-        <button class="btn btn-danger" onclick="$('#not_saved_alert').addClass('hidden')">Игнорировать</button>
     </div>
-    <div style="width: 100%; background-color: #E8E8E6; height: 5px; margin-top: 5px;"></div>
-    <div style="width: 100%; background-color: #F2F2F0; height: 5px;"></div>
-    <div style="width: 100%; background-color: #FBFBF7; height: 5px;"></div>
-</div>
 
-<!-- support for host?q= requests -->
-<script>
-    Searcher.make_query({ {%if query is not None %}q: '{{query}}',{%endif%} {%if cat_id is not None %}cat: '{{cat_id}}'{%endif%} });
-</script>
 
-</body>
+
+
+
+        {% include 'universal/absolute_features.html' %}
+        {% include 'order_form.html' %}
+        {% include 'universal/footer.html' %}
+
+        {% if admin %}
+            <div id="not_saved_alert" style="display: none">
+                <div id="nsatn">Что-то не сохранено</div>
+                <div class="" style="padding: 5px 0 5px 0; background-color: #DDDDDD;">
+                    <button class="btn btn-warning" onclick="SaveManager.save_all_unsaved()">Сохранить Все</button>
+                    <button class="btn btn-danger" onclick="$('#not_saved_alert').addClass('hidden')">Игнорировать</button>
+                </div>
+                <div style="width: 100%; background-color: #E8E8E6; height: 5px; margin-top: 5px;"></div>
+                <div style="width: 100%; background-color: #F2F2F0; height: 5px;"></div>
+                <div style="width: 100%; background-color: #FBFBF7; height: 5px;"></div>
+            </div>
+        {% endif %}
+
+        <!--  Google Fonts  -->
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300&family=Oswald:wght@200;300;500&display=swap" rel="stylesheet">
+
+        <!-- Font Awesome Icons -->
+        <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
+
+        <!-- Bootstrap -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <script src="{% static 'js/common/adminGen.js' %}"></script>
+        <script src="{% static 'js/htmlgens/desktop-gen.js'%}"></script>
+        <script src="{% static 'js/common/app.js' %}"></script>
+        <script src="{% static 'js/common/admin.js' %}"></script>
+        <script src="{% static 'js/listeners.js' %}"></script>
+        <script src="{% static 'js/swap.js' %}"></script>
+
+        <!-- support for host?q= requests -->
+
+
+        <script>
+            Searcher.make_query({silent:true, {%if query is not None %}q: '{{query}}',{%endif%} {%if cat_id is not None %}cat: '{{cat_id}}'{%endif%} });
+        </script>
+
+    </body>
 </html>

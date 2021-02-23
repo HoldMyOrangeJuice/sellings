@@ -7,12 +7,28 @@ import uuid
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import AuthenticationForm
+from django.core.mail import send_mail, EmailMessage
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
+from dbutils.cleanup import deleteUnusedPhotos, deleteFailedReferences, fixNull
+from dbutils.convert import convert_to_webp, convert_all, gen_minified
 from main.ajax import Response
 from main.models import Item, Order
+from parse.xlsxParser import save, xlToJson, merge_photos
 
+# CATEGORIES = {
+#                 0: "Мебель складная",
+#                 1: "Автомобиль",
+#                 2: "Кухонное оборудование",
+#                 3: "Все для чая/кофе",
+#                 4: "Сервировка стола",
+#                 5: "Разное",
+#                 6: "Расходные материалы",
+#                 7: "Кулинарные книги"
+#               }
+
+# print(Item.objects.all()[0].category)
 CATEGORIES = {
                 0: "Мебель складная",
                 1: "Автомобиль",
@@ -21,11 +37,8 @@ CATEGORIES = {
                 4: "Сервировка стола",
                 5: "Разное",
                 6: "Расходные материалы",
-                7: "Кулинарные книги"
+                7: "Кулинарные книги",
               }
-
-
-# print(Item.objects.all()[0].category)
 
 def get_cat_id(cat_):
     for cat_id, cat in zip(CATEGORIES.keys(), CATEGORIES.values()):
@@ -62,6 +75,7 @@ def count_cats():
     s = []
     for cat_id in r.keys():
         s.append((cat_id, CATEGORIES.get(cat_id), r[cat_id]))
+
     return s
 
 
@@ -128,6 +142,8 @@ def save_photos(request):
         filename = str(uuid.uuid1())
         with open(f"{dir_path}/static/images/items/{filename}", "wb") as f:
             f.write(photo.read())
+
+        filename = convert_to_webp(f"{dir_path}/static/images/items", filename)
         filenames.append(filename)
 
     return filenames
@@ -219,66 +235,66 @@ def similar(a, b):
 def search(query=None, cat=None):
     items = []
     total = 0
-    DIRECT_MATCH = 500
+    WORD_MATCH = 500
     RATED_MATCH = 50
-    COMPLETE_MATCH = 5000
+    COMPLETE_MATCH = 1000
     MID_DIFF_BORDER = 2
     LENGTH_IMPACT = 1
+
     print(f"search: {query}")
     if query is not None:
         match_map = {}
         simple_query = simplify(query)
-        # print(f"query: {simple_query}")
+
         if simple_query == "":
             return Item.objects.all()
 
+        # check every item
         for item in Item.objects.all():
+            #interesting_match = True
             points = 0
             name = simplify(item.name)
             name_words = name.split()
-            for name_word in name_words:
-                # print(f"word: {name_word}")
-                for query_word in simple_query.split():
-                    if name_word in query_word or query_word in name_word:
-                        # print(f"word in query, add {DIRECT_MATCH * len(name_word)}")
-                        points += DIRECT_MATCH * len(name_word)*LENGTH_IMPACT
-                        break
-                    else:
-                        rate = similar(query_word, name_word)
-                        # print(f"item name word {name_word} similar to {query_word}: {rate}. add {rate * RATED_MATCH * len(name_word)}")
-                        points += rate * RATED_MATCH * len(name_word)*LENGTH_IMPACT
+            query_words = simple_query.split()
 
+            # check for matches in query
             if simplify(query) in simplify(item.name):
-                print(f'complete match: {query } in {item.name} add {COMPLETE_MATCH * len(query)}')
-                points += COMPLETE_MATCH * len(query)*LENGTH_IMPACT
-            # print(f"{item.name} fits {query} as {points}")
+                print(f"complete match: {query} in {item.name}")
+                points += COMPLETE_MATCH * len(query) * LENGTH_IMPACT
+            else:
+                # compare every name word to query word
+                for name_word in name_words:
+                    for query_word in query_words:
 
+                        if name_word in query_word or query_word in name_word:
+                            print(f"word match: {query } in {item.name}")
+                            points += WORD_MATCH * len(name_word)*LENGTH_IMPACT
+                            break
+                        else:
+                            #interesting_match=False
+                            rate = similar(query_word, name_word)
+                            # replaced RATED_MATCH with WORD_MATCH
+                            points += rate * WORD_MATCH * len(name_word)*LENGTH_IMPACT
+
+            # save item with weight
             points = round(points)
+            #if interesting_match:
+                # print(f"{item.name} scored {points}")
             l = match_map.get(points) or []
             l.append(item)
             match_map[points] = l
-        weights = sorted(match_map.keys(), reverse=True)
+
+        # all weights
+        weights = match_map.keys()
         mid = sum(weights) / len(weights)
-        mid_diff = sum([abs(weights[i] - weights[i - 1]) for i in range(1, len(weights))]) / len(weights)
-        good_weights = []
-
-        for i in range(1, len(weights)):
-            weight = weights[i - 1]
-
-            next_weight = weights[i]
-            if weight > mid:
-                good_weights.append(weight)
-            # elif weight > mid:
-            #     good_weights.append(weights[i - 1])
-
-        print(weights, "\n\n", mid, mid_diff)
+        good_weights = [weight for weight in weights if weight > mid]
 
         for weight in good_weights:
-            print("good weight: ", weight)
             items.extend(match_map[weight])
     else:
         items = Item.objects.all().filter(category=cat)
-    print(f"FOUND {len(items)} items")
+
+    print(f"{len(items)} items matched {query or cat}")
     return items
 
 
@@ -290,7 +306,14 @@ def serialize_items(items=None, ids=None, session=None):
 
 
 def flatten_item_subcat(id, subcat_idx):
-    item = Item.objects.get(id=id)
+
+    item = None
+
+    try:
+        item = Item.objects.get(id=id)
+    except:
+        return None
+
     subcat = item.subcats[subcat_idx]
     serialized = serialize_item(item=item)
     del serialized['subcats']
@@ -303,6 +326,7 @@ def flatten_item_subcat(id, subcat_idx):
 
 def serialize_item(item, id=None, subcat_idx=None, session=None):
     entry = {}
+    # serialize subcat
     if id is not None and subcat_idx is not None:
         return flatten_item_subcat(id, subcat_idx)
 
@@ -328,7 +352,7 @@ def serialize_item(item, id=None, subcat_idx=None, session=None):
     return entry
 
 
-def serialize(cat=None, query=None, part=0, id=None, session=None, ids=None, keep_order=False):
+def serialize(cat=None, query=None, part=0, id=None, session=None, ids=None, order_by_weight=False):
     ITEMS_PER_BATCH = 10
 
     if ids:
@@ -336,12 +360,13 @@ def serialize(cat=None, query=None, part=0, id=None, session=None, ids=None, kee
     elif id:
         items = [Item.objects.get(id=id)]
     else:
+        # items are ordered by weight
         items = search(cat=cat, query=query)
 
     max_parts = math.ceil(len(items) / ITEMS_PER_BATCH)
     part_of_items = items[part * ITEMS_PER_BATCH: (part + 1) * ITEMS_PER_BATCH]
 
-    if keep_order:
+    if order_by_weight:
         categorized = [["ordered", part_of_items]]
     else:
         categorized = categorize_items(part_of_items)
@@ -358,18 +383,85 @@ def serialize(cat=None, query=None, part=0, id=None, session=None, ids=None, kee
 
 
 def serialize_query(query=None, cat=None, id=None, p=0, user_session=None):
-    items, parts = serialize(query=query, cat=cat, id=id, part=p, session=user_session, keep_order=query is not None)
+    print(f"search query: {query} | cat: {cat} | id: {id} | page: {p}\n keeps order: {bool(query)}")
+    items, parts = serialize(query=query, cat=cat, id=id, part=p, session=user_session, order_by_weight=bool(query))
     return Response(success=True, message='query success', payload={'items': items, 'parts': parts})
 
 
-def save_order(item_id, username, message, ip):
+def email(sender, password, receivers, subject, message):
+
+    email = EmailMessage(
+        subject, message, to=receivers
+    )
+    email.content_subtype = "html"
+    email.send()
+
+    # send_mail(
+    #     subject=subject,
+    #     message=message,
+    #     html_message=message,
+    #     auth_user=sender,
+    #     from_email=sender,
+    #     recipient_list=receivers,
+    #     fail_silently=False,
+    #     auth_password=password
+    # )
+
+
+def save_order(item_id, subcat_id, username, message, phone, ip):
+    cwd = os.getcwd()
+    print(f"{cwd}/settings.json")
+    cfg = json.load(open(f"{cwd}/main/settings.json"))
+
+    item = Item.objects.all().get(id=int(item_id))
+
+    if item is None:
+        print("sent bug 1")
+        email(cfg.get("username"),
+              cfg.get("password"),
+              cfg.get("rcv_mail"),
+              'Bug detected',
+              f'{username} ordered bad id: wtf!\nid was {item_id}\n from IP {ip}\nwith message {message}')
+        return
+
+    if int(subcat_id) >= len(item.subcats):
+        print("sent bug 2")
+
+        email(cfg.get("username"),
+              cfg.get("password"),
+              cfg.get("rcv_mail"),
+              'Bug detected',
+              f'{username} subcat not found: wtf!\nid was {item_id}\nsubcat: {subcat_id}\nfrom IP {ip}\nwith message {message}')
+
+        return
+
+    subcat = item.subcats[int(subcat_id)]
+    print("sent success")
+    email(cfg.get("username"),
+          cfg.get("password"),
+          cfg.get("rcv_mail"),
+          'Новый Заказ',
+
+          f'<h2>{username} заказал <span style="color: red">{item.name}</span> </h2>'
+          f'<p>(<span style="font-weight: 600">{subcat.get("code")}</span>: {subcat.get("param") or "-"})<p>'
+          f'<article style="font-size: 20px">{message}</article>'
+          f'<p style="font-size:15px; font-weight: 600">тел. {phone}</p>'
+          f'<div style="font-size: 10px; color:gray; font-family: Consolas, monaco, monospace;">[{ip}]</div>')
+
+    # "vfo@ukr.net", "pelicanzp@gmail.com",
+
     if item_id and username and message:
         Order.objects.create(ip=ip, name=username, message=message, item_id=int(item_id))
 
 
 def process_order(request):
     ip = get_client_ip(request)
-    save_order(request.GET.get("item_id_to_order"), request.GET.get("username"), request.GET.get("message"), ip)
+
+    save_order(request.GET.get("item_id_to_order"), request.GET.get("subcat_id_to_order"),
+               request.GET.get("username"),
+               request.GET.get("message"),
+               request.GET.get("phone"),
+               ip)
     return Response(success=True, message="order processed", payload={})
 
 
@@ -407,6 +499,17 @@ def fetch(id=None, ids=None, query=None, category=None, max_data=None, sess=None
     ser = items[:max_data] if max_data != 0 else items
 
     return Response(success=True, message='fetch success', payload={'items': serialize_items(items=ser, session=sess)})
+
+
+def validate_favs(request):
+    data = dict(request.session.get('fav-ids'))
+
+    for item_str_id in data or []:
+        try:
+            Item.objects.get(id=int(item_str_id))
+        except:
+            del request.session['fav-ids'][item_str_id]
+            continue
 
 
 def api_view(request):
@@ -485,12 +588,15 @@ def api_view(request):
             return get_hints(request.GET.get('pq')).wrap()
 
         if request.GET.get('get-favs'):
+            validate_favs(request)
             fav_subcats_data = request.session.get('fav-ids')
             items = []
             if fav_subcats_data:
                 for item_id in fav_subcats_data.keys():
                     for subcat_idx in fav_subcats_data[item_id]:
                         item = serialize_item(item=None, id=item_id, subcat_idx=subcat_idx)
+                        if item == None:
+                            continue
                         items.append(item)
                 return Response(success=True, message="fav items", payload={'items': items}).wrap()
             else:
@@ -549,30 +655,56 @@ def simplify(s):
 
 
 def reloadData(jsonFile):
-    Item.objects.all().delete()
+
     def getCat(cats, name):
+        if isinstance(name, int) or name.isdigit():
+            return int(name)
+
+        print(f"get cat: {cats} {name}")
         for id_ in cats.keys():
             if cats[id_] == name:
+                print(f"id is: {id_}")
                 return int(id_)
+        print("no id")
         return -1
-    import codecs
-    f = codecs.open(jsonFile, "r", "utf_8_sig")
-    data = f.read()
-    parsed = json.loads(data)
-    f.close()
-    cats = parsed.get("usedCats")
+
+    print(f"open {jsonFile}")
+    file = open(jsonFile, "r", encoding="utf-8")
+
+    parsed = json.load(file)
+    file.close()
+
+    if isinstance(parsed, dict):
+        cats = parsed.get("usedCats")
+        items = parsed.get("data")
+    else:
+        cats = None
+        items = parsed
 
     bulk = [Item(name=x['name'],
                  category=int(getCat(cats, x['category'])),
                  photo_paths=x['photos'],
                  description=x['description'],
                  condition=x['condition'],
-                 subcats=x['subcats']) for x in parsed.get("data")]
+                 subcats=x['subcats']) for x in items]
 
+    Item.objects.all().delete()
     Item.objects.bulk_create(bulk)
     print(f"Items loaded, added {len(bulk)} entries.")
 
+#gen_minified()
+#convert_all()
+#deleteFailedReferences()
+#deleteUnusedPhotos()
 #reloadData("E:/myFignya/programs/python/django-projects/Sellings/parse/parsed.json")
+#reloadData("E:/myFignya/programs/python/django-projects/Sellings/parse/merged.json")
+#save()
+#fixNull()
+#deleteUnusedPhotos()
+#deleteFailedReferences()
+#xlToJson("E:/myFignya/programs/python/django-projects/Sellings/parse/full.xls")
+#merge_photos("parse/parsed.json", "parse/exported.json")
+
 
 def favicon(request):
     return HttpResponse(open(f'{os.getcwd()}/main/static/favicon.ico', 'rb').read(), content_type='image/x-icon')

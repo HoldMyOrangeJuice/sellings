@@ -28,14 +28,19 @@ Array.prototype.remove = function() {
 
 const DEF_BLANK_VAL_TEXT = "-";
 const DEF_BLANK_VAL_NUM = "?";
-const SCREENS_TILL_FETCH = 3;
+const SCREENS_TILL_FETCH = 1.8;
+
 const LANG = {
     edit: "Редактировать",
     add: "Добавить",
     delete: "Удалить",
     save: "Сохранить",
     actions: 'Действия',
-    cancel: 'Отмена'
+    cancel: 'Отмена',
+    name: "Наименование",
+    cats: "Подкатегории",
+    cond: "Состояние",
+    desc: "Описание",
 }
 
 
@@ -52,7 +57,7 @@ class Searcher
 
     static sorts_by_category()
     {
-        return this.cat != null;
+        return this.cat != null || !this.query;
     }
 
     static make_query({q=null, cat=null, id=null, silent=false})
@@ -402,8 +407,9 @@ class Renderer
         //$('.static-contacts > .static-bottom-entry').removeClass("focuded-contacts")
     }
 
-    static open_order_form(item_id)
+    static open_order_form(item_id, subcat_idx)
     {
+        console.log("order: ", item_id, subcat_idx);
         let item = Searcher.get_item(item_id)
 
         if (!item)
@@ -411,9 +417,10 @@ class Renderer
             item = Searcher.fetch({id: item_id})[0];
         }
 
-        $('#item-data').html(`<span>${item.name}</span> <span>${item.condition}</span>`)
+        $('#item-data').html(`<span>${item.name}</span> <span>${item.condition || ""}</span>`)
         $('#orderModal').modal('toggle');
         $('#order_form_item_id').val(item_id);
+        $('#order_form_subcat_idx').val(subcat_idx);
     }
 
     static show_fav_table(fav_items)
@@ -514,7 +521,7 @@ class Renderer
         }
         else
         {
-            $('body').css('position', 'fixed')
+            //$('body').css('position', 'fixed')
             let items = await Networker.get_fav_items();
             Renderer.show_fav_table(items)
         }
