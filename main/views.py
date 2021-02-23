@@ -502,9 +502,9 @@ def fetch(id=None, ids=None, query=None, category=None, max_data=None, sess=None
 
 
 def validate_favs(request):
-    data = dict(request.session.get('fav-ids'))
+    data = dict(request.session.get('fav-ids') or {})
 
-    for item_str_id in data or []:
+    for item_str_id in data.keys() or []:
         try:
             Item.objects.get(id=int(item_str_id))
         except:
