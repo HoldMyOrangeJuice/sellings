@@ -31,7 +31,8 @@
 
       <!-- Contacts -->
       <a class="btn btn-dark"  onclick='Renderer.toggle_contacts()'><i class="fas fa-phone"></i></a>
-    <!-- row -->
+
+
       <!-- Dropdown -->
       <div class="dropdown">
         <button class="btn btn-dark dropdown-toggle nowrap max-fill" type="button" id="dropdownMenuButton"
@@ -42,7 +43,7 @@
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
           {% for cat_id, category, count in counted_categories %}
             {% if render_mode == 'price_list' %}
-              <a class="dropdown-item noselect" onclick="Searcher.make_query({cat: '{{cat_id}}'})">{{category}} ({{count}})</a>
+              <a class="dropdown-item noselect" onclick="Searcher.make_query({cat: '{{cat_id}}', silent: true})">{{category}} ({{count}})</a>
             {% elif render_mode == 'single_item' %}
               <a class="dropdown-item noselect" href="/?cat={{cat_id}}">{{category}} ({{count}})</a>
             {% endif %}
@@ -59,23 +60,9 @@
           </form>
         </div>
 
-        {% if render_mode == 'price_list' %}
-
-        <button class="btn btn-outline-success my-sm-0" type="button" onclick="handle_search_btn()">
+        <button class="btn btn-outline-success my-sm-0" onclick="$('#search_form').submit()">
           <i class=" fas fa-search"></i>
-          </button>
-        {% else %}
-          <button class="btn btn-outline-success my-sm-0" type="button" onclick="window.location.href = ('/?q=' + $('#search').val() + '#main' )">  <i class=" fas fa-search"></i></button>
-          <script>
-            document.getElementById('search_form').onsubmit = ()=> {
-            window.location.href = ('/?q=' + $('#search').val() )
-            document.activeElement.blur();
-            return false;
-            };
-          </script>
-        {% endif %}
-
-
+        </button>
   </nav>
 
 <script>

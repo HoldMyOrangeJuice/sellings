@@ -2,6 +2,7 @@
   --base-image-bigger: 260px;
   --base-image-smaller: 173px;
   --preview-img-size: 50px;
+  --cdark: #343a40;
 }
 
 td, th
@@ -570,6 +571,10 @@ input[type=submit] {
   top: 100%;
   left: 0;
   right: 0;
+
+  /* specific to mobile to make those things not take all screen height */
+  overflow-y: scroll;
+  height: 50vh;
 }
 .autocomplete-items div {
   padding: 10px;

@@ -5,3 +5,4 @@ main/orders.txt
 main/static/images/items
 *.xls
 *.json
+js-logs

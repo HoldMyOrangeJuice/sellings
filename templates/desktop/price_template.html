@@ -8,6 +8,9 @@
 
         {% load static  %}
         {% csrf_token %}
+
+        {% include 'universal/preload.html' %}
+
         <!-- Main style sheet -->
         <link href="{% static 'css/desktop/style.css' %}" rel="stylesheet">
         <link href="{% static 'css/desktop/sidebar.css' %}" rel="stylesheet">

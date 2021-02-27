@@ -336,12 +336,16 @@ class HtmlGen
 
     static gen_usr_frame_entry(item)
     {
-        dark = !dark;
+        dark = false;
         return `
                 <tr class='${dark?"td-dark":""}'>
-                    <td title="Открыть в новой вкладке" style="font-weight: 600">
-                        <a class='link' onclick='PageActions.open_in_new_window("/item/${item.id}")'>
+                    <td title="Открыть на странице" style="font-weight: 600">
+                        <a class='link' href='/item/${item.id}'>
                             ${item.name}
+                        </a>
+                        <br>
+                        <a class='link small-text' onclick='PageActions.open_in_new_window("/item/${item.id}")'>
+                            В новой вкладке
                         </a>
                     </td>
 
@@ -425,7 +429,7 @@ class HtmlGen
             <th>Описание</th>
             <th>Состояние</th>
             <th>Характеристики</th>
-            </tr> 
+            </tr>
         </thead>`
 
         return `<table class='table table-bordered table-stripped'>

@@ -40,7 +40,7 @@
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
         {% for cat_id, category, count in counted_categories %}
           {% if render_mode == 'price_list' %}
-            <a class="dropdown-item noselect" href="#main" onclick="Searcher.make_query({cat: '{{cat_id}}'})">{{category}} ({{count}})</a>
+            <a class="dropdown-item noselect" href="#main" onclick="Searcher.make_query({cat: '{{cat_id}}', silent: true})">{{category}} ({{count}})</a>
           {% elif render_mode == 'single_item' %}
             <a class="dropdown-item noselect" href="/?cat={{cat_id}}">{{category}} ({{count}})</a>
           {% endif %}
@@ -51,51 +51,17 @@
 
   <div class="nav-mid">
     <!-- Search Form -->
-    <form class="form-inline" id="search_form" onsubmit="return false">
+    <form class="form-inline nowrap" id="search_form">
       <div style="position: relative; display: inline-block; ">
         <input id="search" class="form-control" type="search" placeholder="Поиск" autocomplete="off" aria-label="Search" value="{{query}}">
       </div>
 
-      {% if render_mode == 'price_list' %}
-        <script>
-          function on_search_evt(e)
-          {
-               Searcher.make_query({q: $('#search').val()});
-               $('html, body').animate({ scrollTop: $('#split').offset().top-57 }, 1000);
-               document.activeElement.blur();
-               return false;
-          }
 
-          document.getElementById('search_form').onsubmit = e => {return on_search_evt()};
-          $('#search').on('input', ()=>
-          {
-              $.ajax({method: "GET", url: '/api', data: {"pq": $('#search').val()}, success: (r)=>
-                  {
-                      if (r.success)
-                      {
-                          autocomplete(r.payload.sug);
-                      }
-                  }
-              })
-          });
-      </script>
-
-
-      <button class="btn btn-outline-success my-2 my-sm-0" type="button" onclick="on_search_evt()">
+      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">
         <i class=" fas fa-search"></i>
+      </button>
 
-        </button>
-      {% else %}
-        <button class="btn btn-outline-success my-2 my-sm-0" type="button" onclick="window.location.href = ('/?q=' + $('#search').val() + '#main' )">Искать</button>
-        <script>
-          document.getElementById('search_form').onsubmit = ()=> {
-          $('html, body').animate({ scrollTop: $('#split').offset().top-57 }, 1000);
-          window.location.href = ('/?q=' + $('#search').val() )
-          document.activeElement.blur();
-          return false;
-          };
-        </script>
-      {% endif %}
+
     </form>
 
   </div>
@@ -109,7 +75,6 @@
 
   const CATS = {{categories|safe}};
   const ADMIN = {% if admin %}true;{%else%}false;{%endif%}
-
 
   $('#search').on("keydown", function(e)
   {

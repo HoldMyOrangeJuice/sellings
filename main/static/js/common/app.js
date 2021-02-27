@@ -1,5 +1,11 @@
-// mobile
 zip = rows=>rows[0].map((_,c)=>rows.map(row=>row[c]))
+scrolled = ()=>{return (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;}
+
+function isMobile() {
+  try{ document.createEvent("TouchEvent"); return true; }
+  catch(e){ return false; }
+}
+
 function reset(e)
 {
   e.wrap('<form>').closest('form').get(0).reset();
@@ -28,7 +34,7 @@ Array.prototype.remove = function() {
 
 const DEF_BLANK_VAL_TEXT = "-";
 const DEF_BLANK_VAL_NUM = "?";
-const SCREENS_TILL_FETCH = 1.8;
+const SCREENS_TILL_FETCH = 2;
 
 const LANG = {
     edit: "Редактировать",
@@ -98,12 +104,13 @@ class Searcher
             this.part = 0;
         }
         Renderer.wipe_content();
+
         this.load_more();
+
     }
 
     static async load_more()
     {
-
         if (this.fetch_blocked || this.part >= this.max_parts)return;
 
         this.fetch_blocked = true;
@@ -137,7 +144,7 @@ class Searcher
         else
         {
             DOMManager.get_empty_query_banner().empty();
-            Renderer.add_to_table(categorized_items);
+            Renderer.add_to_table(categorized_items)
         }
     }
 
@@ -328,7 +335,10 @@ class Renderer
 {
     static wipe_content()
     {
+        // scroll to top to avoid loading like half of table
         DOMManager.get_table_container().empty();
+        console.log("scroll");
+        window.scrollTo(0, 0);
     }
 
     static delete_item(item_id)
@@ -648,7 +658,7 @@ function autocomplete(arr)
       {
           inp.value = $(e.target).text();
           closeAllLists();
-          handle_search_btn();
+          handle_search_submit();
       });
       a.appendChild(b);
   }
@@ -712,28 +722,61 @@ $('#search').on("keydown", function(e)
     }
 });
 
-function handle_search_btn()
+function handle_search_submit()
 {
-     Searcher.make_query({q: $('#search').val()});
-     document.activeElement.blur();
+    if (window.location.href.includes("item"))
+    {
+        window.location.href = "/?q=" + $('#search').val() + "#main";
+    }
+    else
+    {
+         Searcher.make_query({q: $('#search').val()});
+         $('html, body').animate({ scrollTop: $('#split').offset().top-57 }, 1000);
+         document.activeElement.blur();
+    }
      return false;
 }
+
 
 $(document).ready( ()=>
 {
     $('#main').append( HtmlGen.gen_main_frame_content() )
-    document.getElementById('search_form').onsubmit = e => {return handle_search_btn()};
+    document.getElementById('search_form').onsubmit = e => {console.log("submit form"); return handle_search_submit()};
 })
 
+console.log($('#search'));
 $('#search').on('input', ()=>
 {
     $.ajax({method: "GET", url: '/api', data: {"pq": $('#search').val()}, success: (r)=>
         {
             if (r.success)
             {
-                console.log(r.payload.sug);
                 autocomplete(r.payload.sug);
             }
         }
     })
 });
+
+let prevscroll = 0;
+if (isMobile())
+{
+    document.onscroll = (e)=>
+    {
+        let diff = scrolled() - prevscroll;
+        prevscroll = scrolled();
+        let height = $(".mynavbar")[0].clientHeight+5;
+        let top = parseInt($(".mynavbar").css("top"));
+        let newTop;
+        if (diff > 0)
+        {
+            // scroll down
+            newTop = Math.max(-height, top - diff) + "px"
+        }
+        else
+        {
+            //scroll up
+            newTop =  Math.min(0, top - diff) + "px";
+        }
+        $(".mynavbar").css("top", newTop)
+    }
+}
