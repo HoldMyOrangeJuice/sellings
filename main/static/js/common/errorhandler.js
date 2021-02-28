@@ -4,11 +4,10 @@ window.onerror = (msg, url, lineNo, columnNo, error) =>
     try
     {
         fetch(`/error?data=${data}`)
-        notify(data);
     }
     catch(e)
     {
-        //notify(data);
+        notify(data);
     }
 }
 

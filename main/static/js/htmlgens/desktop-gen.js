@@ -291,10 +291,14 @@ class HtmlGen
                     </select>
                 </td>
                 <td>
-                    <textarea rows='1' data-role='item-description' data-item_id='${item.id}' onkeyup='textAreaAdjust(this)' style='overflow:hidden' class='edit-form input-text text-form-trackable'>${item.description}</textarea>
+                    <textarea rows='1' data-role='item-description' data-item_id='${item.id}'
+                    style='overflow:hidden'
+                    class='auto-adjust edit-form input-text text-form-trackable'>${item.description || DEF_BLANK_VAL_TEXT}</textarea>
                 </td>
                 <td>
-                    <textarea rows='1' data-role='item-condition' data-item_id='${item.id}' onkeyup='textAreaAdjust(this)' style='overflow:hidden' class='edit-form input-text text-form-trackable'>${item.condition}</textarea>
+                    <textarea rows='1' data-role='item-condition' data-item_id='${item.id}'
+                    style='overflow:hidden'
+                    class='auto-adjust edit-form input-text text-form-trackable'>${item.condition || DEF_BLANK_VAL_TEXT}</textarea>
                 </td>
 
                <td data-item_id=${item.id} data-role="item-manipulation">
@@ -389,10 +393,18 @@ class HtmlGen
 
             <thead class='thead thead-dark'>
                 <tr>
-                <th>${LANG.name}</th>
-                <th>${LANG.cats}</th>
-                <th>${LANG.cond}</th>
-                <th>${LANG.desc}</th>
+                ${ADMIN?
+                `<th>${LANG.name}</th>
+                 <th>${LANG.cats}</th>
+                 <th>${LANG.category}</th>
+                 <th>${LANG.desc}</th>
+                 <th>${LANG.cond}</th>
+                 <th>${LANG.delete}</th>`:
+                `<th>${LANG.name}</th>
+                 <th>${LANG.cats}</th>
+                 <th>${LANG.cond}</th>
+                 <th>${LANG.desc}</th>`}
+
                 </tr>
             </thead>
 

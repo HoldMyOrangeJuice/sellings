@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
          <meta charset="UTF-8">
-         <title>Распродажа б/у оборудования и предметов сервировки для дома и HoReCa</title>
+         <title>{{settings.title}}</title>
          <!-- JQuery -->
          <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
@@ -14,6 +14,15 @@
         <!-- Main style sheet -->
         <link href="{% static 'css/desktop/style.css' %}" rel="stylesheet">
         <link href="{% static 'css/desktop/sidebar.css' %}" rel="stylesheet">
+
+
+        <!-- Bootstrap -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+
     </head>
 
     <body>
@@ -45,15 +54,12 @@
             </div>
 
             <div class="flex">
-        <!--        <h1 class="text-header">Гаражная распродажа!!!</h1>-->
-        <h2>Распродажа складной мебели, б/у оборудования для кухни и предметов сервировки для дома и HoReCa</h2>
+                <h2 class="px-5">
+                    {{ settings.text_title }}
+                </h2>
+
                 <p class="body-text">
-                    Распродажа складной мебели, б/у оборудования для кухни и предметов сервировки для дома и HoReCa
-                    <br/>
-                    Добро пожаловать на наш сайт. Здесь вы найдете оборудование для кухни, раскладную мебель,
-        посуду и необходимый инвентарь для сервировки праздничного стола. Есть позиции б/у, есть
-        новые. Надеемся, вы найдете для себя то, что вам нужно. Звоните, пишите. Будем рады ответить
-        на ваши вопросы.
+                    {{ settings.text_main }}
                 </p>
 
                 <div class="flex">
@@ -138,12 +144,7 @@
 
     </div>
 
-
-
-
-
-        {% include 'universal/absolute_features.html' %}
-        {% include 'order_form.html' %}
+        {% include 'universal/modal.html' %}
         {% include 'universal/footer.html' %}
 
         {% if admin %}
@@ -159,32 +160,26 @@
             </div>
         {% endif %}
 
-        <!--  Google Fonts  -->
-        <link rel="preconnect" href="https://fonts.gstatic.com">
-        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300&family=Oswald:wght@200;300;500&display=swap" rel="stylesheet">
-
-        <!-- Font Awesome Icons -->
-        <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
-
-        <!-- Bootstrap -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
-
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-
         <script src="{% static 'js/common/adminGen.js' %}"></script>
         <script src="{% static 'js/htmlgens/desktop-gen.js'%}"></script>
         <script src="{% static 'js/common/app.js' %}"></script>
         <script src="{% static 'js/common/admin.js' %}"></script>
-        <script src="{% static 'js/listeners.js' %}"></script>
         <script src="{% static 'js/swap.js' %}"></script>
 
         <!-- support for host?q= requests -->
-
-
         <script>
             Searcher.make_query({silent:true, {%if query is not None %}q: '{{query}}',{%endif%} {%if cat_id is not None %}cat: '{{cat_id}}'{%endif%} });
         </script>
+
+        <!--  Google Fonts  -->
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300&family=Oswald:wght@200;300;500&display=swap" rel="stylesheet">
+
+         <!-- Font Awesome Icons -->
+        <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
+
+
+        {% include 'universal/postload.html' %}
 
     </body>
 </html>

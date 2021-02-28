@@ -153,6 +153,10 @@ label
 width: 100%;
  padding: 2vh 5vw 5vh 5vw;
  background: url("/static/images/parchment_big.webp");
+ -webkit-background-size: cover;
+ -moz-background-size: cover;
+ -o-background-size: cover;
+ background-size: cover;
 }
 
 #table-container
@@ -430,14 +434,7 @@ padding: 20px 10px 20px 10px;
     transition: height 0.5s cubic-bezier(0.6,-0.1, 0.22, 1.21);
 
 }
-.static-bottom-entry
-{
-    padding: 10px;
-    margin: 0;
-    color: white;
-    font-size: 15px;
-    font-weight: 100;
-}
+
 
 #fav_container
 {
@@ -523,6 +520,7 @@ padding: 20px 10px 20px 10px;
 {
     background: url("/static/images/wpcustom.webp");
     background-size: 300px;
+
 }
 
 #item-data

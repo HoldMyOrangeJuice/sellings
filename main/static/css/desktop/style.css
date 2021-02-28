@@ -163,6 +163,10 @@ label
      display: flex;
      padding: 2vh 5vw 5vh 0;
      background: url("/static/images/parchment_big.webp");
+     -webkit-background-size: cover;
+     -moz-background-size: cover;
+     -o-background-size: cover;
+     background-size: cover;
 }
 
 .flex-table-cats

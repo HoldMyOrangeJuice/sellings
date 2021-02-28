@@ -62,11 +62,18 @@ class AdminNetworker extends NetworkerBase
         const FIELDS = ["name", "condition", "description", "category"]
         let res = {}
         for (let field of FIELDS)
-            res[field] = $(`[data-item_id='${item_id}'][data-role='item-${field}'`).val();
+            res[field] = this.validate_field($(`[data-item_id='${item_id}'][data-role='item-${field}'`).val());
 
         return res;
     }
-
+    static validate_field(value)
+    {
+        if (value === DEF_BLANK_VAL_NUM || value === DEF_BLANK_VAL_TEXT)
+        {
+            return null;
+        }
+        return value;
+    }
     static serialize_subcats(item_id)
     {
         const FIELDS = ['param', 'price', 'amount', 'code']
@@ -77,7 +84,7 @@ class AdminNetworker extends NetworkerBase
             let entry = {}
             for (let field of FIELDS)
             {
-                entry[field] = $($(`[data-item_id='${item_id}'][data-role='subcat_${field}']`)[i]).val()
+                entry[field] = this.validate_field($($(`[data-item_id='${item_id}'][data-role='subcat_${field}']`)[i]).val())
             }
             data.push(entry);
         }
@@ -88,10 +95,10 @@ class AdminNetworker extends NetworkerBase
     {
         let preview_elems = $(`img.temp_image[data-item_id=${item_id}]`);
         let files = $(`input[data-item_id='${item_id}'][data-role='add_files_input']`)[0].files
-        console.log("files:", files);
+
         if (files.length == 0)
         {
-            console.log('no files saved');
+            
             return;
         }
 
@@ -138,7 +145,7 @@ class SaveManager
         // role 1 - item photos
 
         let elem = $(`[data-item_id='${item_id}'][data-role='${role?'photo_item_data':'main_item_data'}']`);
-        console.log("elem cont", elem);
+
         if (not_saved)
         {
             if (role == 0)
@@ -314,7 +321,7 @@ function previewImage(source, target)
 function add_empty_subcat(item_id)
 {
     SaveManager.set_unsaved_state(item_id, true, 0);
-    console.log("set unsaved state");
+
     let subcat_idx = PageActions.count_subcats(item_id);
     let html = HtmlGen.gen_adm_subcat(item_id, subcat_idx, "", "", 0, 0, false)
     $(`table[data-subcat_table=${item_id}]`).find('tbody').append(html)
@@ -347,7 +354,7 @@ function listen_to_tmp_img_load()
 
 function handle_adm_image_click(clicked)
 {
-    console.log(clicked);
+
     if ($(clicked).hasClass("selected"))
     {
         $(clicked).removeClass("selected");

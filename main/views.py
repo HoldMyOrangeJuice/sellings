@@ -17,6 +17,27 @@ from main.ajax import Response
 from main.models import Item, Order
 from parse.xlsxParser import save, xlToJson, merge_photos
 
+
+class SiteSettings:
+    title = "Распродажа б/у оборудования и предметов сервировки для дома и HoReCa"
+
+    text_title = "Распродажа складной мебели, б/у оборудования для кухни и предметов сервировки для дома и HoReCa"
+
+    text_main = """Добро пожаловать на наш сайт. Здесь вы найдете оборудование для кухни, раскладную мебель,
+        посуду и необходимый инвентарь для сервировки праздничного стола. Есть позиции б/у, есть
+        новые. Надеемся, вы найдете для себя то, что вам нужно. Звоните, пишите. Будем рады ответить
+        на ваши вопросы."""
+
+    version = "V1.0.1"
+
+
+def render_with_settings(**kwargs):
+    context = kwargs.get("context") or {}
+    context['settings'] = SiteSettings
+    kwargs['context'] = context
+    return render(**kwargs)
+
+
 CATEGORIES = {
                 0: "Мебель складная",
                 1: "Автомобиль",
@@ -94,7 +115,7 @@ def price_page(request):
         cat_id = request.GET.get('cat')
     if not query and not cat_id:
         query = ""
-    return render(request, f"{gtp(request)}/price_template.html", context={"admin": request.user.is_superuser,
+    return render_with_settings(request=request, template_name=f"{gtp(request)}/price_template.html", context={"admin": request.user.is_superuser,
                                                            "categories": json.dumps(CATEGORIES),
                                                            "counted_categories": count_cats(),
                                                            'render_mode': 'price_list',
@@ -111,7 +132,7 @@ def login_view(request):
             login(request, user)
 
     if request.user.is_anonymous:
-        return render(request, "login.html", context={"form": AuthenticationForm()})
+        return render_with_settings(request=request, template_name="login.html", context={"form": AuthenticationForm()})
 
     else:
         return redirect("/")
@@ -225,7 +246,7 @@ def item_page(request):
 
     item.add_click()
 
-    return render(request, f"{gtp(request)}/item_page.html", context={'render_mode': 'single_item',
+    return render_with_settings(request=request, template_name=f"{gtp(request)}/item_page.html", context={'render_mode': 'single_item',
                                                       'item': item,
                                                       "categories": json.dumps(CATEGORIES),
                                                       'json_item': json.dumps(item.serialize(session=request.session)),

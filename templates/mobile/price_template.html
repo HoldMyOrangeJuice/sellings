@@ -5,7 +5,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta charset="UTF-8">
-    <title>Распродажа б/у оборудования и предметов сервировки для дома и HoReCa</title>
+    <title> {{ settings.title }} </title>
 
     <!-- JQuery -->
      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -25,13 +25,12 @@
 
             <div class="flex">
 
-                <h2>Распродажа складной мебели, б/у оборудования для кухни и предметов сервировки для дома и HoReCa</h2>
+                <h2>
+                    {{ settings.text_title }}
+                </h2>
 
                 <p class="body-text">
-                    Добро пожаловать на наш сайт. Здесь вы найдете оборудование для кухни, раскладную мебель,
-                    посуду и необходимый инвентарь для сервировки праздничного стола. Есть позиции б/у, есть
-                    новые. Надеемся, вы найдете для себя то, что вам нужно. Звоните, пишите. Будем рады ответить
-                    на ваши вопросы.
+                    {{ settings.text_main }}
                 </p>
 
                 <p class="text-main">
@@ -140,9 +139,11 @@
 
         </div>
 
-        {% include 'universal/absolute_features.html' %}
-        {% include 'order_form.html' %}
+        {% include 'universal/modal.html' %}
+
         {% include 'universal/footer.html' %}
+
+        {% include 'universal/postload.html' %}
 
         <div id="not_saved_alert" style="display: none">
             <div id="nsatn">Что-то не сохранено</div>
@@ -172,7 +173,6 @@
         <link href="{% static 'css/mobile/style.css' %}" rel="stylesheet">
         <link href="{% static 'css/mobile/sidebar.css' %}" rel="stylesheet">
         <script src="{% static 'js/common/app.js' %}"></script>
-        <script src="{% static 'js/listeners.js' %}"></script>
         <script src="{% static 'js/swap.js'%}"></script>
         <script src="{% static 'js/htmlgens/mobile-gen.js'%}"></script>
 

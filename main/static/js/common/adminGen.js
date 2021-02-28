@@ -1,6 +1,5 @@
 function genSaveItemBtn(item_id)
 {
-    console.log("save item btn");
     return `<button class='btn btn-warning'
             data-item_id='${item_id}'
             data-role='confirm_main_data_edit'

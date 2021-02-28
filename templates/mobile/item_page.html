@@ -40,7 +40,6 @@
     {% endif %}
 
     <script src="{% static 'js/common/app.js' %}"></script>
-    <script src="{% static 'js/listeners.js' %}"></script>
     <script src="{% static 'js/swap.js'%}"></script>
     <script src="{% static 'js/htmlgens/mobile-gen.js'%}"></script>
 
@@ -49,9 +48,11 @@
         Searcher.disabled = true;
     </script>
 
-    {% include 'universal/absolute_features.html' %}
-    {% include 'order_form.html' %}
+    {% include 'universal/modal.html' %}
+
     {% include 'universal/footer.html' %}
+
+    {% include 'universal/postload.html' %}
 
 
 

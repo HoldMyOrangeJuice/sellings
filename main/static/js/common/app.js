@@ -47,6 +47,7 @@ const LANG = {
     cats: "Подкатегории",
     cond: "Состояние",
     desc: "Описание",
+    category:"категории"
 }
 
 
@@ -165,7 +166,7 @@ class NetworkerBase
     {
         if (method == 'GET')
         {
-            console.log(data)
+
             let ser = typeof data == 'string'? data : jQuery.param( data )
             return await fetch(`${url}?${ser}`, {
                 method: method,
@@ -386,7 +387,7 @@ class Renderer
                 this.fill_frame(category, item);
             }
         }
-        listen_to_adjusts();
+        ensure_textarea_size();
     }
 
     static toggle_contacts()
@@ -617,12 +618,6 @@ $(document).ready(function()
         }
    });
 });
-
-function textAreaAdjust(element)
-{
-  element.style.height = "1px";
-  element.style.height = (element.scrollHeight)+"px";
-}
 
 function query(q)
 {
