@@ -8,7 +8,7 @@ class HtmlGen
 
         for (let image of images)
         {
-            image_icons += `<div style='background-image: url("/static/images/items/${image}")' class='bulk_item img-icon ${active_path==image?'active': ""}'></div>`
+            image_icons += `<div style='background-image: url(${get_image_path(image)})' class='bulk_item img-icon ${active_path==image?'active': ""}'></div>`
         }
 
         return `<div id='image_viewer' onSwap='console.log("touch sawp", e.detail.direction)'>
@@ -19,7 +19,7 @@ class HtmlGen
                     </div>
 
                     <!-- img main -->
-                    <img id='image_main' src='/static/images/items/${active_path}'>
+                    <img id='image_main' src='${get_image_path(active_path)}'>
 
                     <!-- controls -->
                     <div class='viewer_controls flex'>
@@ -180,7 +180,7 @@ class HtmlGen
             reader.readAsDataURL(file);
         }
 
-        return `<img src='${temp?"/static/images/placeholder":`/static/images/items/${file}`}'
+        return `<img src='${temp?get_image_path("placeholder"):get_image_path(file)}'
                   class='image ${temp?'temp_image': ''}' ${temp?"":`id='${file}'`}
                   data-item_id='${item_id}'
                   data-role='illustration'
@@ -226,7 +226,7 @@ class HtmlGen
                           data-role='image_icon'
                           data-path='${path}'
                           onclick='handle_image_click(this)'
-                          style='background-image: url("/static/images/min/${path}");'></div>`
+                          style='background-image: url("${get_min_image_path(path)}");'></div>`
         }
         html += "</div>";
 

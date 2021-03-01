@@ -2,18 +2,30 @@
 {
     display: flex;
     background-color: #F9F9F9;
-    padding: 5px;
-    height: 57px;
-    justify-content: space-between;
+    padding: 0 5px 0 5px;
+
+    justify-content: center;
     align-items: center;
     box-shadow: 0px 4px 6px -2px rgba(56,56,56,1);
     z-index: 100;
+    flex-wrap: wrap;
+}
+.wrappable
+{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+.nav-entry
+{
+    padding: 5px 5px 5px 5px;
 }
 .nav-left
 {
     display: flex;
     flex-direction: row;
-    height: 38px;
+    align-items: center;
+    justify-content: center;
     margin-right: 10px;
 }
 .nav-right

@@ -1,8 +1,9 @@
 {% load static %}
 
 <script>
-    const VERSION = "{{settings.version}}"
+    const VERSION = "v1.0.0"
+    const MEDIA_URL = {{ settings.MEDIA_URL }}
+    const STATIC_URL = {{ settings.STATIC_URL }}
 </script>
 
-<link rel="stylesheet" href="{% static 'css/common/common.css' %}">
 <script src="{% static 'js/common/errorhandler.js' %}"></script>

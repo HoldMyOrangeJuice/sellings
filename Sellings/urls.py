@@ -13,17 +13,25 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf.urls import url
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, re_path
 
-from main.api import api_view, handle_error
+from main.api import handle_error, AdminApi, UserApi
 from main.views import price_page, login_view, item_page, favicon
+from django.conf import settings
 
 urlpatterns = [
     path('', price_page),
     re_path('^item\/[0-9]*$', item_page),
+
+    re_path(AdminApi.make_path(), AdminApi.dispatch),
+    re_path(UserApi.make_path(), UserApi.dispatch),
+
     path('login', login_view),
-    path('api', api_view),
     path('error', handle_error),
     path('favicon.ico', favicon),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+

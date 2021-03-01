@@ -49,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'middleware.middleware.get_ip_middleware'
 ]
 
 ROOT_URLCONF = 'Sellings.urls'
@@ -105,7 +106,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru'
 
 TIME_ZONE = 'UTC'
 
@@ -120,8 +121,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = f"{BASE_DIR}/static/"
 
-cfg = json.load(open(f"{os.getcwd()}/main/settings.json"))
+SETTINGS_JSON_PATH = f"{BASE_DIR}/settings.json"
+
+MEDIA_URL = f"media/"
+MEDIA_ROOT = f"{BASE_DIR}/media/"
+
+cfg = json.load(open(SETTINGS_JSON_PATH))
 
 DEFAULT_FROM_EMAIL = "rastaprices@gmail.com"
 SERVER_EMAIL = "rastaprices@gmail.com"
@@ -131,4 +138,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = "rastaprices@gmail.com"
 EMAIL_HOST_PASSWORD = cfg.get("password")
 EMAIL_PORT = 587
+
+
+
 

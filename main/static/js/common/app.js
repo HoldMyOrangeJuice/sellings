@@ -1,40 +1,25 @@
-zip = rows=>rows[0].map((_,c)=>rows.map(row=>row[c]))
-scrolled = ()=>{return (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;}
+scrolled = ()=>{
+    return (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
+}
 
-function isMobile() {
-  try{ document.createEvent("TouchEvent"); return true; }
+function isMobile()
+{
+  try{
+      document.createEvent("TouchEvent");
+      return true;
+  }
   catch(e){ return false; }
 }
 
-function reset(e)
-{
-  e.wrap('<form>').closest('form').get(0).reset();
-  e.unwrap();
-}
-uuid = ()=>
-{
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
-
-Array.prototype.remove = function() {
-    var what, a = arguments, L = a.length, ax;
-    while (L && this.length) {
-        what = a[--L];
-        while ((ax = this.indexOf(what)) !== -1) {
-            this.splice(ax, 1);
-        }
-    }
-    return this;
-};
-
-
-
 const DEF_BLANK_VAL_TEXT = "-";
 const DEF_BLANK_VAL_NUM = "?";
-const SCREENS_TILL_FETCH = 2;
+const SCREENS_TILL_FETCH = 3;
+
+const QUERY_URL = "/api/user/make_query";
+const GET_FAVOURITE_URL = "/api/user/get_favourite";
+const ORDER_URL = "/api/user/order";
+const EDIT_FAVOURITE_URL = "/api/user/edit_favourite";
+const HINTS_URL = "/api/user/get_hints"
 
 const LANG = {
     edit: "Редактировать",
@@ -50,6 +35,15 @@ const LANG = {
     category:"категории"
 }
 
+function get_image_path(filename)
+{
+    return `${MEDIA_URL}images/items/${filename}`
+}
+
+function get_min_image_path(filename)
+{
+    return `${MEDIA_URL}images/min/${filename}`
+}
 
 class Searcher
 {
@@ -83,16 +77,16 @@ class Searcher
             else
                 PageActions.set_url(`/?q=${q}`);
             this.query = q;
-            this.cat = null;
-            this.id=null;
+            this.category = null;
+            this.item_id=null;
             this.part = 0;
         }
         else if (cat != null)
         {
             PageActions.set_url(`/?cat=${cat}`);
             this.query = null;
-            this.id=null;
-            this.cat = cat;
+            this.item_id=null;
+            this.category = cat;
             this.part = 0;
         }
         else if (id != null)
@@ -100,8 +94,8 @@ class Searcher
             if (!window.location.href.includes("/item"))
                 PageActions.set_url(`/?id=${id}`);
             this.query = null;
-            this.cat = null;
-            this.id=id;
+            this.category = null;
+            this.item_id=id;
             this.part = 0;
         }
         Renderer.wipe_content();
@@ -112,20 +106,14 @@ class Searcher
 
     static async load_more()
     {
-        if (this.fetch_blocked || this.part >= this.max_parts)return;
+        if (this.disabled || this.fetch_blocked || this.part >= this.max_parts)return;
 
         this.fetch_blocked = true;
 
-        let data = {p: this.part}
-        if (this.query!=null)
-        data.q = this.query
-        if (this.cat!=null)
-        data.cat = this.cat
-        if (this.id!=null)
-        data.id = this.id
+        let data = {part: this.part, query: this.query, category: this.category, item_id: this.item_id};
 
+        let [categorized_items, parts] = await Networker.fetch(data);
 
-        let [categorized_items, parts] = await Networker.get_items(data);
         this.fetch_blocked = false;
 
         this.part += 1;
@@ -149,7 +137,7 @@ class Searcher
         }
     }
 
-    static get_item(item_id)
+    static async get_item(item_id)
     {
         for (let item of this.items)
         {
@@ -158,19 +146,44 @@ class Searcher
                 return item;
             }
         }
+        return await Searcher.fetch({id: item_id})[0];
     }
 }
 class NetworkerBase
 {
+    static prehandle_response(response)
+    {
+         console.log("response: ", response);
+         if (response.alert)
+         {
+              Renderer.show_feedback(response.success, response.message);
+         }
+    }
+
     static async makeRequest(method, url, data)
     {
+        if (typeof data === "object")
+        {
+            for (let key of Object.keys(data))
+            {
+                if (data[key] == null || data[key] == undefined){
+                    delete data[key];
+                }
+            }
+        }
+        if (!url)
+        {
+            url = "/api"
+        }
+
         if (method == 'GET')
         {
 
             let ser = typeof data == 'string'? data : jQuery.param( data )
-            return await fetch(`${url}?${ser}`, {
+            let response = await fetch(`${url}?${ser}`, {
                 method: method,
             });
+            return response;
         }
         else
         {
@@ -178,8 +191,11 @@ class NetworkerBase
                 var xhr = new XMLHttpRequest();
                 xhr.open(method, url);
                 xhr.onload = function () {
-                  if (this.status >= 200 && this.status < 300) {
-                    resolve( JSON.parse(xhr.response) );
+                  if (this.status >= 200 && this.status < 300)
+                  {
+                      let response = JSON.parse(xhr.response);
+                      resolve(response);
+
                   } else {
                     reject({
                       status: this.status,
@@ -198,12 +214,10 @@ class NetworkerBase
         }
     }
 
-    static async POST(data)
+    static async POST(data, url)
     {
-        console.log(data);
         if (! (data instanceof FormData) )
         {
-            console.log("to fdata");
             let fd = new FormData();
             for ( let key of Object.keys(data) )
             {
@@ -213,53 +227,61 @@ class NetworkerBase
         }
         data.append('csrfmiddlewaretoken', document.getElementsByName("csrfmiddlewaretoken")[0].value);
 
-        let resp = await this.makeRequest('POST', '/api', data);
-        return resp;
+        let response = await this.makeRequest('POST', url, data);
+        this.prehandle_response(response);
+        return response;
     }
 
-    static async GET(data)
+    static async GET(data, url)
     {
-        let resp = await this.makeRequest('GET', '/api', data);
-        return await resp.json();
+        let resp = await this.makeRequest('GET', url, data);
+        let response = await resp.json();
+        this.prehandle_response(response);
+        return response;
     }
 }
 
 class Networker extends NetworkerBase
 {
-    static async fetch({id=null,
-                        ids=null,
+    static async fetch({item_id=null,
+                        item_ids=null,
                         query=null,
                         category=null,
-                        max_data=0})
+                        part_size=10,
+                        part=0})
     {
         // same as make query but returns max_data entries
         // and does not change searcher state
-        let response = await this.GET({id: id, ids:ids, query:query, category:category, max_data:max_data});
+        let response = await this.GET({item_id, item_ids, query, category, part_size, part}, QUERY_URL);
+
         if (response.success)
         {
-            return response.payload.items;
+            return [response.payload.items, response.payload.parts]
         }
+        return [[], 0]
     }
 
-    static async get_items(query_data_obj)
+    static async get_hints()
     {
-        let data = await this.GET(query_data_obj);
-        return [data.payload.items, data.payload.parts];
+        let data = {"query": $('#search').val()}
+        return await this.GET(data, HINTS_URL)
     }
 
     static async set_fav_state(item_id, subcat_idx, checked)
     {
-        return await this.POST( {'id_to_fav': item_id, 'fav_idx': subcat_idx, 'fav': checked?"1":"0"} )
+        return await this.POST( {'item_id': item_id, 'subcat_idx': subcat_idx, 'favourite': checked?"true":"false"}, EDIT_FAVOURITE_URL )
     }
 
     static async submit_order()
     {
-        Networker.GET( $('#orderModal').find('form').serialize() );
+        let data = new FormData($('#orderModal').find('form')[0])
+        Networker.POST(data, ORDER_URL);
+
     }
 
     static async get_fav_items()
     {
-        let data = await this.GET({"get-favs": "1"});
+        let data = await this.GET({}, GET_FAVOURITE_URL);
         return data.payload.items;
     }
 }
@@ -402,36 +424,51 @@ class Renderer
 
     static stretch_contacts()
     {
-        //$('.static-contacts').css('height', '300px');
-        //$('.static-contacts > .static-bottom-entry').addClass("focuded-contacts")
-        $('#toggleContacts').modal({
-        show: true
-        });
+        $('#toggleContacts').modal({show: true});
     }
 
     static collapse_contacts()
     {
-        $('#toggleContacts').modal({
-        show: false
-        });
-        //$('.static-contacts').css('height', '45px');
-        //$('.static-contacts > .static-bottom-entry').removeClass("focuded-contacts")
+        $('#toggleContacts').modal({show: false});
     }
 
-    static open_order_form(item_id, subcat_idx)
+    static async open_order_form(item_id, subcat_idx)
     {
-        console.log("order: ", item_id, subcat_idx);
-        let item = Searcher.get_item(item_id)
+        let item = await Searcher.get_item(item_id)
 
-        if (!item)
+        if (subcat_idx === undefined)
         {
-            item = Searcher.fetch({id: item_id})[0];
+            if (item.subcats.length === 1)
+            {
+                subcat_idx = 0;
+                set_subcat(subcat_idx);
+            }
+            else
+            {
+                let selection = $("#order-subcat-selection")
+                let html = "<p>Подкатегории</p><ul>";
+                for (let [idx, subcat] of item.subcats.entries())
+                {
+                    html += `<li><input type='checkbox'
+                                        data-item_id='${item_id}'
+                                        data-role='order-subcat-selector'
+                                        data-subcat_idx='${idx}'>
+                                        ${subcat.code|| "- "} ${subcat.param || "-"}
+                             </li>`
+                }
+
+                html += "</ul>";
+                selection.html(html);
+            }
+        }
+        else
+        {
+            set_subcat(subcat_idx);
         }
 
+        $('#order_form_item_id').val(item_id);
         $('#item-data').html(`<span>${item.name}</span> <span>${item.condition || ""}</span>`)
         $('#orderModal').modal('toggle');
-        $('#order_form_item_id').val(item_id);
-        $('#order_form_subcat_idx').val(subcat_idx);
     }
 
     static show_fav_table(fav_items)
@@ -476,7 +513,7 @@ class Renderer
         {
             $('#image_viewer').find('.active').removeClass('active');
             $($('#image_viewer').find('#image_icons').children().get(i)).addClass('active');
-            $('#image_main').attr('src', `/static/images/items/${photos[i]}`);
+            $('#image_main').attr('src', get_image_path(photos[i]));
         }
 
 
@@ -511,12 +548,6 @@ class Renderer
 
     }
 
-    static hide_overlay()
-    {
-        $(".blur").addClass("hidden")
-        $(".overlay").addClass("hidden")
-    }
-
     static close_fav_table()
     {
         $(`#fav_container`).removeClass('fav_opened');
@@ -537,6 +568,50 @@ class Renderer
             Renderer.show_fav_table(items)
         }
     }
+
+    static show_feedback(success, message)
+    {
+        let mwindow = $("#notificationModal");
+        let mtitle = $("#notification-title");
+        let mbody = $("#notification-body");
+
+        let icon = success?'<span>&#9745;</span>':'<span>&#9888;</span>'
+
+        if (typeof message == "string")
+        {
+            mtitle.html(icon);
+            mbody.html(message);
+        }
+
+        if (typeof message == "object")
+        {
+            let title = message.title;
+            let content = message.content;
+
+            mtitle.html(icon + " " + title);
+            mbody.html(content);
+        }
+        mwindow.modal({show: true});
+    }
+}
+
+$(document).on("change", "input[data-role='order-subcat-selector']", (e)=>
+{
+    if ($(e.target).prop("checked"))
+    {
+        $("input[data-role='order-subcat-selector']").prop("checked", false );
+        $(e.target).prop("checked", true );
+        set_subcat( $(e.target).data("subcat_idx") );
+    }
+    else
+    {
+        set_subcat(undefined);
+    }
+});
+
+function set_subcat(idx)
+{
+    $('#order_form_subcat_idx').val(idx);
 }
 
 
@@ -578,7 +653,7 @@ function handle_image_click(clicked)
     }
 }
 
-function submit_order()
+async function submit_order()
 {
     let myform = $('#orderModal').find('form')[0];
     if (!myform.checkValidity())
@@ -587,9 +662,14 @@ function submit_order()
             myform.reportValidity();
         return;
     }
-    Networker.submit_order();
-    $('#orderModal').modal('toggle');
+    let response = await Networker.submit_order();
+    if (response.success)
+    {
+        $('#orderModal').modal({show: false});
+    }
 }
+
+
 
 photos = []
 let current = null;
@@ -630,7 +710,7 @@ function query_cat(c)
 }
 
 
-// autocomplete
+
 let currentFocus;
 function autocomplete(arr)
 {
@@ -739,17 +819,15 @@ $(document).ready( ()=>
     document.getElementById('search_form').onsubmit = e => {console.log("submit form"); return handle_search_submit()};
 })
 
-console.log($('#search'));
+async function do_autocomplete()
+{
+    let response = await Networker.get_hints();
+    autocomplete(response.payload.items);
+}
+
 $('#search').on('input', ()=>
 {
-    $.ajax({method: "GET", url: '/api', data: {"pq": $('#search').val()}, success: (r)=>
-        {
-            if (r.success)
-            {
-                autocomplete(r.payload.sug);
-            }
-        }
-    })
+    do_autocomplete();
 });
 
 let prevscroll = 0;

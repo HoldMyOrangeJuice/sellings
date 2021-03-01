@@ -114,7 +114,7 @@ def merge_photos(source, dest):
             print(f"added photos for {item.get('name')} from {parsed_src_item['name']} new photos: {new_photos}\n\n")
             item['photos'] = new_photos
 
-    file = open("E:/myFignya/programs/python/django-projects/Sellings/parse/merged.json", "w", encoding="utf-8")
+    file = open("/utils/parse/merged.json", "w", encoding="utf-8")
     # print(str(dest).encode("utf-8"))
     # file.write(str(dest).encode("utf-8"))
     # file.close()

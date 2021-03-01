@@ -1,5 +1,12 @@
+import random
+import uuid
+
 import jsonfield
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import models
+
+from Sellings.settings import MEDIA_ROOT
+
 
 
 class Item(models.Model):
@@ -154,6 +161,24 @@ class Item(models.Model):
             items = Item.objects.all().filter(category=cat)
 
         return items
+
+    @staticmethod
+    def save_photos(request):
+        file_names = []
+
+        from utils.dbutils.convert import convert_to_webp
+
+        for photo in request.FILES.getlist('photo'):
+
+            filename = str(uuid.uuid1())
+
+            with open(f"{MEDIA_ROOT}images/items/{filename}", "wb") as f:
+                f.write(photo.read())
+
+            filename = convert_to_webp(f"{MEDIA_ROOT}images/items", filename)
+            file_names.append(filename)
+
+        return file_names
 
 
 class Order(models.Model):

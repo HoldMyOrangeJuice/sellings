@@ -7,7 +7,7 @@ window.onerror = (msg, url, lineNo, columnNo, error) =>
     }
     catch(e)
     {
-        notify(data);
+        notify(data + "While handling above, this happened: " + e);
     }
 }
 

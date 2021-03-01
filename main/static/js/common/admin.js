@@ -1,20 +1,55 @@
+const SUBCAT_FIELDS = ['param', 'price', 'amount', 'code']
+const PLAIN_FIELDS = ["name", "condition", "description", "category"]
+
+const ADD_ITEM_URL = "/api/admin/add_item";
+const DELETE_ITEM_URL = "/api/admin/delete_item";
+const UPDATE_ITEM_URL = "/api/admin/update_item";
+const DELETE_PHOTOS_URL = "/api/admin/delete_photos";
+const SAVE_PHOTOS_URL = "/api/admin/save_photos";
+
+function reset(e)
+{
+  e.wrap('<form>').closest('form').get(0).reset();
+  e.unwrap();
+}
+
+function uuid()
+{
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+Array.prototype.remove = function() {
+    var what, a = arguments, L = a.length, ax;
+    while (L && this.length) {
+        what = a[--L];
+        while ((ax = this.indexOf(what)) !== -1) {
+            this.splice(ax, 1);
+        }
+    }
+    return this;
+};
+
 class AdminNetworker extends NetworkerBase
 {
-    static add_item()
+    static async add_item()
     {
         let form_data = new FormData($("#add_item_form")[0])
-        this.POST(form_data).then(function cb(data)
-        {
-            if (data.success)
-                reset_form($("#add_item_form"));
-            else
-                alert("Не все поля заполнены.")
-        });
+        let data = await this.POST(form_data, ADD_ITEM_URL);
+
+        if (data.success)
+            reset_form($("#add_item_form"));
+        else
+            alert("Не все поля заполнены.")
+
     }
 
     static async delete_item(id)
     {
-        let response = await this.POST( {"id_to_del": id} )
+        let response = await this.POST({"item_id": id}, DELETE_ITEM_URL)
+
         if (response.success)
             Renderer.delete_item(id);
     }
@@ -23,15 +58,17 @@ class AdminNetworker extends NetworkerBase
     {
         // everything except photo done here
         let formData = new FormData();
-        formData.append("id_to_edit", item_id);
+        formData.append("item_id", item_id);
 
         let item = this.serialize_item(item_id);
+
         for (let key of Object.keys(item))
         {
             formData.append(key, item[key]);
         }
 
-        let response = await this.POST(formData);
+        let response = await this.POST(formData, UPDATE_ITEM_URL);
+
         if (response.success)
         {
             // remove unsaved background
@@ -45,50 +82,8 @@ class AdminNetworker extends NetworkerBase
 
     static async delete_photos(item_id, filenames)
     {
-        let r = await this.POST({item_id: item_id, filenames_to_delete: JSON.stringify(filenames)})
-        return r;
-    }
-
-    static serialize_item(item_id)
-    {
-        let item_data = this.serialize_common_item_data(item_id);
-        item_data.subcats = JSON.stringify(this.serialize_subcats(item_id));
-
-        return item_data;
-    }
-
-    static serialize_common_item_data(item_id)
-    {
-        const FIELDS = ["name", "condition", "description", "category"]
-        let res = {}
-        for (let field of FIELDS)
-            res[field] = this.validate_field($(`[data-item_id='${item_id}'][data-role='item-${field}'`).val());
-
-        return res;
-    }
-    static validate_field(value)
-    {
-        if (value === DEF_BLANK_VAL_NUM || value === DEF_BLANK_VAL_TEXT)
-        {
-            return null;
-        }
-        return value;
-    }
-    static serialize_subcats(item_id)
-    {
-        const FIELDS = ['param', 'price', 'amount', 'code']
-        let data = []
-        let subcats_count = $(`[data-item_id='${item_id}'][data-role='subcat_entry']`).length
-        for (let i=0; i < subcats_count; i++)
-        {
-            let entry = {}
-            for (let field of FIELDS)
-            {
-                entry[field] = this.validate_field($($(`[data-item_id='${item_id}'][data-role='subcat_${field}']`)[i]).val())
-            }
-            data.push(entry);
-        }
-        return data;
+        let data = {item_id: item_id, filenames: JSON.stringify(filenames)};
+        return await this.POST(data, DELETE_PHOTOS_URL);
     }
 
     static async save_images(item_id)
@@ -98,14 +93,14 @@ class AdminNetworker extends NetworkerBase
 
         if (files.length == 0)
         {
-            
             return;
         }
 
-        let formData = new FormData( $(`form[data-item_id='${item_id}'][data-role='add_files_form']`)[0] );
-
-        formData.append("item_id_add_photo_for", item_id);
-        let response = await Networker.POST(formData);
+        let form = $(`form[data-item_id='${item_id}'][data-role='add_files_form']`)[0];
+        let formData = new FormData(form);
+        formData.append("item_id", item_id);
+        console.log(formData);
+        let response = await Networker.POST(formData, SAVE_PHOTOS_URL);
 
         // remove temp photos and
         // add new with static link
@@ -123,6 +118,48 @@ class AdminNetworker extends NetworkerBase
         $(`button[data-item_id='${item_id}'][data-role='cancel_photo_addition']`).remove();
         // remove files from imput
         reset($(`input[data-item_id=${item_id}][data-role='add_files_input']`))
+    }
+
+    static serialize_item(item_id)
+    {
+        let item_data = this.serialize_common_item_data(item_id);
+        item_data.subcats = JSON.stringify(this.serialize_subcats(item_id));
+        return item_data;
+    }
+
+    static serialize_common_item_data(item_id)
+    {
+        let res = {}
+        for (let field of PLAIN_FIELDS)
+            res[field] = this.validate_field($(`[data-item_id='${item_id}'][data-role='item-${field}'`).val());
+
+        return res;
+    }
+
+    static validate_field(value)
+    {
+        if (value === DEF_BLANK_VAL_NUM || value === DEF_BLANK_VAL_TEXT)
+        {
+            return null;
+        }
+        return value;
+    }
+
+    static serialize_subcats(item_id)
+    {
+        let data = []
+        let subcats_count = $(`[data-item_id='${item_id}'][data-role='subcat_entry']`).length
+        for (let i=0; i < subcats_count; i++)
+        {
+            let entry = {}
+            for (let field of SUBCAT_FIELDS)
+            {
+                let field_elem = $($(`[data-item_id='${item_id}'][data-role='subcat_${field}']`)[i]);
+                entry[field] = this.validate_field(field_elem.val())
+            }
+            data.push(entry);
+        }
+        return data;
     }
 }
 

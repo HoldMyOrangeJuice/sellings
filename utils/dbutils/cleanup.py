@@ -1,5 +1,6 @@
 import os
 
+from Sellings.settings import MEDIA_ROOT
 from main.models import Item
 
 
@@ -35,8 +36,9 @@ def fixNull():
 
         item.save()
 
+
 def deleteFailedReferences():
-    all_photos = os.listdir(path=f"{os.getcwd()}/main/static/images/items")
+    all_photos = os.listdir(path=f"{MEDIA_ROOT}images/items")
     for item in Item.objects.all():
         paths = item.photo_paths
         for path in paths.copy():
@@ -47,7 +49,7 @@ def deleteFailedReferences():
         item.save()
 
 def deleteUnusedPhotos():
-    for photo in os.listdir(path=f"{os.getcwd()}/main/static/images/items"):
+    for photo in os.listdir(path=f"{MEDIA_ROOT}images/items"):
         used = False
         for item in Item.objects.all():
             if photo in item.photo_paths:
@@ -56,4 +58,4 @@ def deleteUnusedPhotos():
 
         if not used:
             print(f"deleted {photo}")
-            os.remove(f"{os.getcwd()}/main/static/images/items/{photo}")
+            os.remove(f"{MEDIA_ROOT}/images/items/{photo}")

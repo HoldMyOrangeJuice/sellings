@@ -1,24 +1,20 @@
 import json
 import math
 import os
-import random
-import sys
-import uuid
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import AuthenticationForm
-from django.core.mail import send_mail, EmailMessage
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
-from dbutils.cleanup import deleteUnusedPhotos, deleteFailedReferences, fixNull
-from dbutils.convert import convert_to_webp, convert_all, gen_minified
-from main.ajax import Response
-from main.models import Item, Order
-from parse.xlsxParser import save, xlToJson, merge_photos
+from Sellings.settings import STATIC_ROOT
+from utils.network.ajax import Response
+from main.models import Item
 
 
 class SiteSettings:
+    from django.conf import settings
+
     title = "Распродажа б/у оборудования и предметов сервировки для дома и HoReCa"
 
     text_title = "Распродажа складной мебели, б/у оборудования для кухни и предметов сервировки для дома и HoReCa"
@@ -28,7 +24,10 @@ class SiteSettings:
         новые. Надеемся, вы найдете для себя то, что вам нужно. Звоните, пишите. Будем рады ответить
         на ваши вопросы."""
 
-    version = "V1.0.1"
+    version = "V1.1.1"
+
+    MEDIA_URL = settings.MEDIA_URL
+    STATIC_URL = settings.STATIC_URL
 
 
 def render_with_settings(**kwargs):
@@ -161,9 +160,9 @@ def serialize_items(items=None, categorized=None, session=None):
     raise Exception("Nothing was passed to serialize function, probably a bug")
 
 
-def get_items_page(cat=None, query=None, part=0, id=None, session=None, ids=None, order_by_weight=False):
+def get_items_page(cat=None, query=None, part=0, id=None, part_size=None, session=None, ids=None, order_by_weight=False):
 
-    ITEMS_PER_BATCH = 10
+    ITEMS_PER_BATCH = part_size
     items = Item.find(cat=cat, query=query, id=id, ids=ids)
 
     if not order_by_weight:
@@ -182,7 +181,7 @@ def get_items_page(cat=None, query=None, part=0, id=None, session=None, ids=None
     return serialize_items(categorized=categorized, session=session), max_parts
 
 
-def serialize_query(query=None, cat=None, id=None, p=0, user_session=None):
+def serialize_query(query=None, cat=None, id=None, p=0, part_size=10, user_session=None):
     print(f"search query: {query} | cat: {cat} | id: {id} | page: {p}\n keeps order: {bool(query)}")
 
     items, parts = get_items_page(query=query,
@@ -190,6 +189,7 @@ def serialize_query(query=None, cat=None, id=None, p=0, user_session=None):
                                   id=id,
                                   part=p,
                                   session=user_session,
+                                  part_size=part_size,
                                   order_by_weight=bool(query))
 
     return Response(success=True, message='query success', payload={'items': items, 'parts': parts})
@@ -278,6 +278,5 @@ def simplify(s):
 #xlToJson("E:/myFignya/programs/python/django-projects/Sellings/parse/full.xls")
 #merge_photos("parse/parsed.json", "parse/exported.json")
 
-
 def favicon(request):
-    return HttpResponse(open(f'{os.getcwd()}/main/static/favicon.ico', 'rb').read(), content_type='image/x-icon')
+    return HttpResponse(open(f'{STATIC_ROOT}/favicon.ico', 'rb').read(), content_type='image/x-icon')

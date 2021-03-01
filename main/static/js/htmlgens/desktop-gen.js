@@ -8,7 +8,7 @@ class HtmlGen
 
         for (let image of images)
         {
-            image_icons += `<div style='background-image: url("/static/images/items/${image}")' class='bulk_item img-icon ${active_path==image?'active': ""}'></div>`
+            image_icons += `<div style='background-image: url("${get_image_path(image)}")' class='bulk_item img-icon ${active_path==image?'active': ""}'></div>`
         }
 
         return `<div id='image_viewer'>
@@ -19,7 +19,7 @@ class HtmlGen
                     </div>
 
                     <!-- img main -->
-                    <img id='image_main' src='/static/images/items/${active_path}'>
+                    <img id='image_main' src='${get_image_path(active_path)}'>
 
                     <!-- controls -->
                     <div class='viewer_controls flex'>
@@ -193,7 +193,7 @@ class HtmlGen
             reader.readAsDataURL(file);
         }
 
-        return `<img src='${temp?"/static/images/placeholder":`/static/images/items/${file}`}'
+        return `<img src='${temp? get_image_path('placeholder'):get_image_path(file)}'
                   class='adm-img ${temp?'temp_image': ''}' ${temp?"":`id='${file}'`}
                   data-item_id='${item_id}'
                   data-role='illustration'
@@ -258,7 +258,7 @@ class HtmlGen
             let side = Math.min(200, cont_width/paths.length);
             console.log(side);
             html += `<div class='${img_style}'
-                          style='width: ${side}px; height: ${side}px; background-image: url("/static/images/min/${path}");'
+                          style='width: ${side}px; height: ${side}px; background-image: url("${get_min_image_path(path)}");'
                           data-role='image_icon'
                           data-path='${path}'
                           onclick='handle_image_click(this)'></div>`
@@ -343,7 +343,7 @@ class HtmlGen
         dark = false;
         return `
                 <tr class='${dark?"td-dark":""}'>
-                    <td title="Открыть на странице" style="font-weight: 600">
+                    <td title="Открыть на странице" style="font-weight: 600; width: 25%">
                         <a class='link' href='/item/${item.id}'>
                             ${item.name}
                         </a>
@@ -351,21 +351,23 @@ class HtmlGen
                         <a class='link small-text' onclick='PageActions.open_in_new_window("/item/${item.id}")'>
                             В новой вкладке
                         </a>
+                        <br>
+                        <button class='mt-4 btn btn-dark' onclick='Renderer.open_order_form(${item.id})'>Заказать</button>
                     </td>
 
-                    <td title="Подкатегории">
+                    <td title="Подкатегории" style="width: 30%">
 
                         ${HtmlGen.gen_subcats_table(item.subcats, item.id)}
                     </td>
 
-                    <td title="Состояние" class='p-3'>
+                    <td title="Состояние" class='p-3' style="width: 20%">
                         Состояние ${item.condition || DEF_BLANK_VAL_TEXT}
                     </td>
 
                     <td class='p-4'>${item.description || DEF_BLANK_VAL_TEXT}</td>
                 </tr>
 
-                <tr class='${dark?"td-dark":""} photo-row'>
+                <tr class='${dark?"td-dark":""} photo-row' style="width: 25%">
                     <td title="Изображения" colspan='4'>
                         ${HtmlGen.gen_image_bulk(item.photo_paths, item.id)}
                     </td>

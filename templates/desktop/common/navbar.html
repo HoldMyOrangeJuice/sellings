@@ -4,54 +4,59 @@
 
 <nav class="mynavbar sticky">
 
-  <div class="nav-left">
+  <div class="nav-entry nav-left wrappable">
 
-    {% if render_mode == 'price_list' %}
-    <!-- Go Up -->
-    <a class="navbar-brand" href="#">Наверх</a>
-    {% endif %}
+    <div class="nav-left">
+      {% if render_mode == 'price_list' %}
+      <!-- Go Up -->
+      <a class="navbar-brand" href="#">Наверх</a>
+      {% endif %}
 
-    <!-- Favourite -->
-    <a class="btn btn-dark nowrap dropdown-toggle" id="toggle_fav_tab_btn"  style="margin-right: 10px;" onclick="Renderer.toggle_fav_tab();">
-      <i class="ml-1 fas fa-shopping-cart"></i>
-      <span>Корзина</span>
-    </a>
-    <!-- Full List -->
-    {% if render_mode == 'price_list' %}
-    <a class="btn btn-dark nowrap"  style="margin-right: 10px;" onclick="Searcher.make_query({q:''})">
-      <i class="fas fa-list ml-1" style=""></i>
-      <span>Полный список</span>
-    </a>
-    {% elif render_mode == 'single_item' %}
-    <a class="btn btn-dark nowrap"  style="margin-right: 10px;" href="/">На Главную</a>
-    {% endif %}
+      <!-- Favourite -->
+      <a class="btn btn-dark nowrap dropdown-toggle" id="toggle_fav_tab_btn"  style="margin-right: 10px;" onclick="Renderer.toggle_fav_tab();">
+        <i class="ml-1 fas fa-shopping-cart"></i>
+        <span>Корзина</span>
+      </a>
+      <!-- Full List -->
+      {% if render_mode == 'price_list' %}
+      <a class="btn btn-dark nowrap"  style="margin-right: 10px;" onclick="Searcher.make_query({q:''})">
+        <i class="fas fa-list ml-1" style=""></i>
+        <span>Полный список</span>
+      </a>
+      {% elif render_mode == 'single_item' %}
+      <a class="btn btn-dark nowrap"  style="margin-right: 10px;" href="/">На Главную</a>
+      {% endif %}
+    </div>
 
-    <!-- Contacts -->
-    <div class="btn btn-dark nowrap"  style="margin-right: 10px;" onclick='Renderer.toggle_contacts()'>
-      <i class="ml-1 fas fa-phone"></i>
-      <span>Контакты</span>
-  </div>
-    <!-- Dropdown -->
-    <div class="dropdown">
-      <button class="btn btn-dark dropdown-toggle nowrap" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        <i class="ml-1 fas fa-bars"></i>
-        Категории
-      </button>
-      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-        {% for cat_id, category, count in counted_categories %}
-          {% if render_mode == 'price_list' %}
-            <a class="dropdown-item noselect" href="#main" onclick="Searcher.make_query({cat: '{{cat_id}}', silent: true})">{{category}} ({{count}})</a>
-          {% elif render_mode == 'single_item' %}
-            <a class="dropdown-item noselect" href="/?cat={{cat_id}}">{{category}} ({{count}})</a>
-          {% endif %}
-        {%endfor%}
+    <div class="nav-left">
+      <!-- Contacts -->
+      <div class="btn btn-dark nowrap"  style="margin-right: 10px;" onclick='Renderer.toggle_contacts()'>
+        <i class="ml-1 fas fa-phone"></i>
+        <span>Контакты</span>
+      </div>
+
+      <!-- Dropdown -->
+      <div class="dropdown">
+        <button class="btn btn-dark dropdown-toggle nowrap" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <i class="ml-1 fas fa-bars"></i>
+          Категории
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          {% for cat_id, category, count in counted_categories %}
+            {% if render_mode == 'price_list' %}
+              <a class="dropdown-item noselect" href="#main" onclick="Searcher.make_query({cat: '{{cat_id}}', silent: true})">{{category}} ({{count}})</a>
+            {% elif render_mode == 'single_item' %}
+              <a class="dropdown-item noselect" href="/?cat={{cat_id}}">{{category}} ({{count}})</a>
+            {% endif %}
+          {%endfor%}
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="nav-mid">
+  <div class="nav-mid nav-entry">
     <!-- Search Form -->
-    <form class="form-inline nowrap" id="search_form">
+    <form class="form-inline" id="search_form">
       <div style="position: relative; display: inline-block; ">
         <input id="search" class="form-control" type="search" placeholder="Поиск" autocomplete="off" aria-label="Search" value="{{query}}">
       </div>

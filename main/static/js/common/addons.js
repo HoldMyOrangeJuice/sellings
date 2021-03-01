@@ -1,4 +1,4 @@
-$(document).on('input', "textarea", (e)=>{
+$(document).on('input', ".auto-adjust", (e)=>{
     resize(e.target);
 })
 
@@ -7,7 +7,7 @@ $(document).on('input', "textarea", (e)=>{
 //     delayedResize(e.target);
 // })
 
-$('body').on('focus', "textarea", (e)=>{
+$('body').on('focus', ".auto-adjust", (e)=>{
     resize(e.target);
 })
 
@@ -27,7 +27,7 @@ function delayedResize ()
 
 function ensure_textarea_size()
 {
-    for (elem of $("textarea"))
+    for (elem of $(".auto-adjust"))
     {
         resize(elem);
     }

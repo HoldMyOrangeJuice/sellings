@@ -3,6 +3,7 @@ venv/
 db.sqlite3
 main/orders.txt
 main/static/images/items
+/media/
 *.xls
 *.json
 js-logs

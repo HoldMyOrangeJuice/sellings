@@ -127,30 +127,6 @@ label
     margin-top: 10px;
 }
 
-.overlay
-{
-    width: 90vw;
-    margin: 0 5vw 0 5vw;
-    position: fixed;
-    top: 10vh;
-    z-index: 2;
-}
-
-.blur
-{
-    width: 100vw;
-    height: 100vh;
-    position: fixed;
-    background-color: rgba(0.5, 0.5, 0.5, 0.7);
-    z-index: 1;
-    top: 0;
-}
-
-.marg-vert
-{
-    margin: 1vh 0 1vh 0;
-}
-
 .preview
 {
     width: 60%;
@@ -503,11 +479,13 @@ padding: 20px 10px 20px 10px;
 * { box-sizing: border-box; }
 body {
   font: 16px Arial;
+  min-width: 1000px;
+  overflow-x: visible;
 }
 .autocomplete {
   /*the container must be positioned relative:*/
   position: relative;
-  display: inline-block;
+
 }
 input {
   border: 1px solid transparent;
@@ -527,6 +505,7 @@ input[type=submit] {
 {
     position: relative;
 }
+
 .autocomplete-items {
   width: 100%;
   position: absolute;
@@ -538,6 +517,7 @@ input[type=submit] {
   left: 0;
   right: 0;
 }
+
 .autocomplete-items div {
   padding: 10px;
   cursor: pointer;
