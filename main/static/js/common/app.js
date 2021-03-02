@@ -275,7 +275,7 @@ class Networker extends NetworkerBase
     static async submit_order()
     {
         let data = new FormData($('#orderModal').find('form')[0])
-        Networker.POST(data, ORDER_URL);
+        return Networker.POST(data, ORDER_URL);
 
     }
 
@@ -296,16 +296,14 @@ class PageActions
     {
         window.open(path);
     }
-    static lock_scroll(jq)
+    static lock_scroll()
     {
-        sc = $(document).scrollTop();
-        jq.css('position', 'fixed');
+        $("body").addClass("modal-open")
     }
 
-    static unlock_scroll(jq)
+    static unlock_scroll()
     {
-        jq.css('position', 'relative');
-        $(document).scrollTop(sc)
+        $("body").removeClass("modal-open")
     }
 
     static scroll_to(sel)
@@ -351,6 +349,116 @@ class DOMManager
 
     // order
 
+}
+
+class OrderForm
+{
+    static messageField = ()=>$("#message-text");
+    static idField = ()=>$("#order_form_item_id");
+    static subcatField = ()=>$("#order_form_subcat_idx");
+    static phoneField = ()=>$("#phone");
+    static form = ()=>$('#orderModal').find('form');
+    static modal = ()=>$('#orderModal');
+    static last_id;
+
+    static clearMessage()
+    {
+        this.messageField.text("")
+    }
+
+    static set_subcat(idx)
+    {
+        this.subcatField().val(idx);
+    }
+
+    static async submit()
+    {
+        let myform = this.form()[0];
+        if (!myform.checkValidity())
+        {
+            if (myform.reportValidity)
+                myform.reportValidity();
+            return;
+        }
+
+        this.close();
+        console.log("close");
+        let response = await Networker.submit_order();
+        if (response.success)
+        {
+            this.clearMessage();
+        }
+
+        else if (this.last_id)
+        {
+            let hints = response.payload;
+
+            setTimeout(()=>{
+                this.open(this.last_id, undefined);
+                this.show_hints(hints);
+            }, 500 );
+
+        }
+    }
+
+    static show_hints(hints)
+    {
+        for (let field_name of Object.keys(hints))
+        {
+            let message = hints[field_name];
+            let field = this.form().find(`[name='${field_name}'][type!='hidden']`)
+            $( `<p class='order-form-hint'>${message}</p>` ).insertAfter( field );
+        }
+
+    }
+    static close()
+    {
+        this.set_subcat(undefined);
+        this.modal().modal( "hide" );
+        $(".order-form-hint").remove();
+    }
+
+    static async open(item_id, subcat_idx)
+    {
+        this.last_id = item_id;
+        let item = await Searcher.get_item(item_id)
+
+        if (subcat_idx === undefined)
+        {
+            if (item.subcats.length === 1)
+            {
+                subcat_idx = 0;
+                this.set_subcat(subcat_idx);
+            }
+            else
+            {
+                let selection = $("#order-subcat-selection")
+                let html = "<ul>";
+                for (let [idx, subcat] of item.subcats.entries())
+                {
+                    html += `<li><input type='checkbox'
+                                        data-item_id='${item_id}'
+                                        data-role='order-subcat-selector'
+                                        data-subcat_idx='${idx}'>
+                                        ${subcat.code|| "- "} ${subcat.param || "-"}
+                             </li>`
+                }
+
+                html += "</ul>";
+                selection.html(html);
+            }
+        }
+        else
+        {
+            this.set_subcat(subcat_idx);
+        }
+        console.log("show");
+
+        $('#order_form_item_id').val(item_id);
+        $('#item-data').html(`<span>${item.name}</span> <span>${item.condition || ""}</span>`)
+        $('#orderModal').modal('show');
+
+    }
 }
 
 // this class defines all page content changing actions
@@ -424,60 +532,26 @@ class Renderer
 
     static stretch_contacts()
     {
-        $('#toggleContacts').modal({show: true});
+        $('#toggleContacts').modal("show");
     }
 
     static collapse_contacts()
     {
-        $('#toggleContacts').modal({show: false});
-    }
-
-    static async open_order_form(item_id, subcat_idx)
-    {
-        let item = await Searcher.get_item(item_id)
-
-        if (subcat_idx === undefined)
-        {
-            if (item.subcats.length === 1)
-            {
-                subcat_idx = 0;
-                set_subcat(subcat_idx);
-            }
-            else
-            {
-                let selection = $("#order-subcat-selection")
-                let html = "<p>Подкатегории</p><ul>";
-                for (let [idx, subcat] of item.subcats.entries())
-                {
-                    html += `<li><input type='checkbox'
-                                        data-item_id='${item_id}'
-                                        data-role='order-subcat-selector'
-                                        data-subcat_idx='${idx}'>
-                                        ${subcat.code|| "- "} ${subcat.param || "-"}
-                             </li>`
-                }
-
-                html += "</ul>";
-                selection.html(html);
-            }
-        }
-        else
-        {
-            set_subcat(subcat_idx);
-        }
-
-        $('#order_form_item_id').val(item_id);
-        $('#item-data').html(`<span>${item.name}</span> <span>${item.condition || ""}</span>`)
-        $('#orderModal').modal('toggle');
+        $('#toggleContacts').modal("hide");
     }
 
     static show_fav_table(fav_items)
     {
+        function offsetBottom(el, i) { i = i || 0; return $(el)[i].getBoundingClientRect().bottom }
+
+        let navbar = $(".mynavbar")
+        let bottom = offsetBottom(navbar[0]);
 
         $(`#fav_container`).empty();
-        $(`#fav_container`).css("height", 'calc(100vh - 128px)')
+        //$(`#fav_container`).css("top", bottom + "px")
+        $(`#fav_container`).css("height", $(window).height() - bottom + "px")
         $(`#fav_container`).addClass('fav_opened')
-
+        PageActions.lock_scroll();
         HtmlGen.gen_fav_table(fav_items);
     }
 
@@ -503,9 +577,10 @@ class Renderer
         }
 
         // show window
-        $('body').append( HtmlGen.gen_image_viewer(photos[current], photos) );
-        //lock_scroll($('body'));
-        PageActions.lock_scroll($(window));
+        let html = HtmlGen.gen_image_viewer(photos[current], photos);
+        $('body').append(html);
+
+        PageActions.lock_scroll();
         listen_to_swaps($('#image_viewer'), (dir)=>{if (dir == "<-")prev();else next();})
 
 
@@ -513,14 +588,24 @@ class Renderer
         {
             $('#image_viewer').find('.active').removeClass('active');
             $($('#image_viewer').find('#image_icons').children().get(i)).addClass('active');
-            $('#image_main').attr('src', get_image_path(photos[i]));
+            let image = $('#image_main');
+            let path = get_image_path(photos[i]);
+
+            if (image[0]?.nodeName == 'DIV')
+            {
+                image.css("background-image", `url('${path}')`)
+            }
+            else
+            {
+                image.attr('src', path);
+            }
         }
 
 
 
-        $('body').on('keydown', e=>{if (e.key == 'Escape'){hide();}})
+        $('body').on('keydown', e=>{if (e.key == 'Escape'){this.close_image_view_window();}})
         $('.img-icon').on('click', e=>{show($(e.target).index())})
-        $('#image_viewer').on('click', e=>{if (e.target.id == 'image_viewer'){hide()}})
+        $('#image_viewer').on('click', e=>{if ($(e.target).hasClass("modal-backdrop")){this.close_image_view_window()}})
 
         const next = ()=>
         {
@@ -548,11 +633,18 @@ class Renderer
 
     }
 
+    static close_image_view_window()
+    {
+        $("#image_viewer").remove();
+        PageActions.unlock_scroll();
+    }
+
     static close_fav_table()
     {
         $(`#fav_container`).removeClass('fav_opened');
         $(`#fav_container`).css("height", 0)
-        $('body').css('position', 'relative')
+
+        PageActions.unlock_scroll();
     }
 
     static async toggle_fav_tab()
@@ -601,18 +693,13 @@ $(document).on("change", "input[data-role='order-subcat-selector']", (e)=>
     {
         $("input[data-role='order-subcat-selector']").prop("checked", false );
         $(e.target).prop("checked", true );
-        set_subcat( $(e.target).data("subcat_idx") );
+        OrderForm.set_subcat( $(e.target).data("subcat_idx") );
     }
     else
     {
-        set_subcat(undefined);
+        OrderForm.set_subcat(undefined);
     }
 });
-
-function set_subcat(idx)
-{
-    $('#order_form_subcat_idx').val(idx);
-}
 
 
 function edit_favourite(item_id, subcat_idx)
@@ -648,38 +735,17 @@ function handle_image_click(clicked)
     }
     else
     {
-        $(".blur").show()
         Renderer.open_photo_view_window(clicked, parent);
     }
 }
 
-async function submit_order()
-{
-    let myform = $('#orderModal').find('form')[0];
-    if (!myform.checkValidity())
-    {
-        if (myform.reportValidity)
-            myform.reportValidity();
-        return;
-    }
-    let response = await Networker.submit_order();
-    if (response.success)
-    {
-        $('#orderModal').modal({show: false});
-    }
-}
+
 
 
 
 photos = []
 let current = null;
-function hide()
-{
-    $('#image_viewer').remove();
-    $(".blur").hide();
-    //unlock_scroll($('body'));
-    enableScroll(window);
-}
+
 
 let sc;
 
@@ -767,7 +833,6 @@ document.addEventListener("click", function (e)
 {
     closeAllLists(e.target);
 });
-document.addEventListener('scroll', Renderer.collapse_contacts);
 
 /*execute a function presses a key on the keyboard:*/
 $('#search').on("keydown", function(e)

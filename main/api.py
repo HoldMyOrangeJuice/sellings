@@ -272,7 +272,7 @@ class UserApi(RequestDispatcher):
 
         form = OrderForm(request.POST)
         if not form.is_valid():
-            return Response(False, "form invalid", form.errors).wrap()
+            return Response(False, "form invalid", form.errors, alert=False).wrap()
         form_data = form.cleaned_data
 
         item_id = form_data.get("item_id")

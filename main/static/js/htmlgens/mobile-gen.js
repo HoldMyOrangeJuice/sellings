@@ -8,35 +8,40 @@ class HtmlGen
 
         for (let image of images)
         {
-            image_icons += `<div style='background-image: url(${get_image_path(image)})' class='bulk_item img-icon ${active_path==image?'active': ""}'></div>`
+            image_icons += `<div style='background-image: url("${get_image_path(image)}")' class='bulk_item img-icon ${active_path==image?'active': ""}'></div>`
         }
 
-        return `<div id='image_viewer' onSwap='console.log("touch sawp", e.detail.direction)'>
+        return `<div id='image_viewer'>
+                <div class="modal-backdrop fade show"></div>
+                <div id='image_viewer_content'>
 
-                    <!-- close btn -->
-                    <div id='close_viewer_icon'>
-                        <i style='font-size: 20px;' class="fas fa-window-close" onclick="hide()"></i>
-                    </div>
+                    <p></p>
+
+                    <button class="close image_viewer_close" onclick="Renderer.close_image_view_window()">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+
+                    <p></p>
+
+                    <button id='viewer_prev' class='btn btn-warning img-viewer-nav'><i class="fas fa-angle-left"></i></button>
 
                     <!-- img main -->
-                    <img id='image_main' src='${get_image_path(active_path)}'>
-
-                    <!-- controls -->
-                    <div class='viewer_controls flex'>
-
-                        <!-- <- buttons -> -->
-                        <div id='viewer_buttons'>
-                            <button id='viewer_prev' class='btn btn-warning'><i class="fas fa-angle-left"></i></button>
-                            <button id='viewer_next' class='btn btn-warning'><i class="fas fa-angle-right"></i></button>
-                        </div>
-
-                        <!-- icons -->
-                        <div id='image_icons'>
-                            ${image_icons}
-                        <div>
+                    <div id="image_main" style='background-image: url("${get_image_path(active_path)}")'>
                     </div>
 
-                </div>`
+                    <button id='viewer_next' class='btn btn-warning img-viewer-nav'><i class="fas fa-angle-right"></i></button>
+
+
+                    <!-- icons -->
+                    <div id='image_icons'>
+                        ${image_icons}
+                    <div>
+                </div>
+            </div>
+
+
+
+            </div>`
     }
 
     static gen_select(cat)
@@ -72,7 +77,7 @@ class HtmlGen
                     '<span>Убрать из корзины</span><i style="margin-left: 4px; color: gray" class="fas fa-trash-alt"></i>':
                     '<span>Добавить в корзину</span><i style="margin-left: 2px; color: gray" class="fas fa-shopping-cart"></i>'}
             </div>
-            <div class="dropdown-item" onclick='Renderer.open_order_form(${item_id}, ${subcat_id})'>
+            <div class="dropdown-item" onclick='OrderForm.open(${item_id}, ${subcat_id})'>
                 <span>Заказать</span><i style='margin-left: 5px; color: gray' class="fas fa-money-check"></i>
             </div>
           </div>
@@ -422,7 +427,7 @@ class HtmlGen
                     <tbody>
                         <tr>
                             <td colspan='2'>
-                                <table>
+                                <table style="width: 100%">
                                     ${HtmlGen.gen_subcat(item.id, item.subcat_id, item.code, item.param, item.price, item.amount, true)}
                                 </table>
                             </td>
@@ -430,7 +435,7 @@ class HtmlGen
 
                         <tr>
                             <td>
-                                <button class='btn btn-warning btn-block' onclick="Renderer.open_order_form(${item.id}, ${item.subcat_id})">Заказать</button>
+                                <button class='btn btn-warning btn-block' onclick="OrderForm.open(${item.id}, ${item.subcat_id})">Заказать</button>
                             </td>
                             <td>
                             <!--"Searcher.make_query({id: ${item.id}});$('html, body').animate({ scrollTop: $('#split').offset().top-57 }, 1000); close_fav_table();"-->

@@ -55,12 +55,6 @@ body
     border-radius: 5%;
 }
 
-.viewer_controls
-{
-    position: absolute;
-    bottom: 5vh;
-}
-
 .text-main
 {
 
@@ -317,23 +311,55 @@ padding: 20px 10px 20px 10px;
 
 #image_viewer
 {
+    display: flex;
     position: fixed;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
+
     top: 0;
     left: 0;
-    z-index: 20;
-    display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
 }
 
+#image_viewer_content
+{
+    max-width: 1000px;
+    position: fixed;
+    z-index: 99999;
+    display: grid;
+    /* grid-template-columns: 10% 80% 10%; */
+}
+
+
 #image_main
 {
-    max-width: 90vw;
-    max-height: 60vh;
+    width: min(70vw, 700px);
+    height: min(60vh, 600px);
+
+    display: flex;
+    justify-content: center;
+    background: var(--cdark);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    /* padding: 5px 5px 5px 5px; */
 }
+.img-viewer-nav
+{
+    max-width: 100px;
+    width: 10vw;
+}
+
+.image_viewer_close
+{
+    width: 10%;
+    align-self: end;
+    justify-self: end;
+    color: white!important;
+}
+
 #close_viewer_icon
 {
     position: absolute;
@@ -345,23 +371,26 @@ padding: 20px 10px 20px 10px;
 
 #image_icons
 {
-    display: flex;
+    grid-column: 1 / span 3;
     flex-direction: row;
-    background-image: linear-gradient(rgb(221, 225, 230) 0%, rgb(185, 186, 189) 100%);
+
+    display: flex;
+    justify-content: center;
+
+    /* background-image: linear-gradient(rgb(221, 225, 230) 0%, rgb(185, 186, 189) 100%); */
     padding: 2px;
-    border: 1px solid #BAC3C8;
+    /* border: 1px solid #BAC3C8; */
 
 }
+
 .img-icon
 {
-    width: 10vw;
-    padding: 5px;
-    background: #EBEBEB;
     border: 4px solid #C3C6C8;
     margin: 3px;
-    box-shadow: 6px 4px 18px -1px rgba(153,153,153,0.54);
-    width: var(--preview-img-size);
-    height: var(--preview-img-size);
+
+    width: 5vw;
+    height: 5vw;
+
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center center;
@@ -393,8 +422,7 @@ padding: 20px 10px 20px 10px;
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
-    position: fixed;
-    top: 57px;
+    /* position: fixed; */
     left: 0;
     width: 100%;
     /* background: #2B2B2B; */

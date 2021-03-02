@@ -3,3 +3,9 @@
     font-size: 15px;
     font-weight: 600;
 }
+.order-form-hint
+{
+    color: #aa3030;
+    font-family: Consolas;
+    margin: 0;
+}
