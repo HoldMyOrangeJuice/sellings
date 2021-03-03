@@ -24,7 +24,7 @@ class SiteSettings:
         новые. Надеемся, вы найдете для себя то, что вам нужно. Звоните, пишите. Будем рады ответить
         на ваши вопросы."""
 
-    version = "V1.1.2"
+    version = "V1.1.3"
 
     MEDIA_URL = settings.MEDIA_URL
     STATIC_URL = settings.STATIC_URL

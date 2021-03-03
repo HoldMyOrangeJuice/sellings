@@ -1,3 +1,5 @@
+'use strict';
+
 const SUBCAT_FIELDS = ['param', 'price', 'amount', 'code']
 const PLAIN_FIELDS = ["name", "condition", "description", "category"]
 

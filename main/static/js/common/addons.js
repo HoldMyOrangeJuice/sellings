@@ -1,3 +1,5 @@
+'use strict';
+
 $(document).on('input', ".auto-adjust", (e)=>{
     resize(e.target);
 })

@@ -128,10 +128,23 @@ label
     margin-right: 20%;
 }
 
+#split{
+    margin: 0;
+    padding: 15px 0 15px 0;
+    box-shadow: inset -4px 3px 20px 6px rgb(0 0 0 / 53%);
+    background: var(--cdark);
+    color: #beb7b7;
+    font-weight: 500;
+}
+
+.header-main-container
+{
+    padding: 3% 2% 3% 2%;
+}
+
 .body-main
 {
      display: flex;
-     padding: 2vh 5vw 5vh 0;
      background: url("/static/images/parchment_big.webp");
      -webkit-background-size: cover;
      -moz-background-size: cover;

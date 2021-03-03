@@ -3,68 +3,90 @@
 <link rel="stylesheet" href="{% static 'css/mobile/navbar.css'%}">
 
 <nav class="mynavbar sticky">
+    <table class="navtable">
+      <tr>
+        <td style="width: 70%"></td>
+        <td style="width: 20%"></td>
+        <td style="width: 10%"></td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          {% if render_mode == 'price_list' %}
+          <!-- Go Up -->
 
-    {% if render_mode == 'price_list' %}
-    <!-- Go Up -->
+          <a class="navbar-brand-" href="#">Наверх</a>
+          {% else %}
+          <a class="navbar-brand-" href="#"></a>
+          {% endif %}
+        </td>
+      </tr>
 
-    <a class="navbar-brand-" href="#">Наверх</a>
-    {% else %}
-    <a class="navbar-brand-" href="#"></a>
-    {% endif %}
-    <!-- row -->
+      <tr>
+         <td class="left">
+          <!-- Full List -->
+              {% if render_mode == 'price_list' %}
+              <a class="btn btn-dark nowrap" style="width: 100%"  onclick="Searcher.make_query({q:''})">
+                <i class="fas fa-list ml-1" style=""></i>
+                <span>Полный список</span>
+              </a>
+              {% elif render_mode == 'single_item' %}
+                <a class="btn btn-dark nowrap"  href="/">На Главную</a>
+              {% endif %}
+        </td>
 
-      <!-- Favourite -->
-      <a class="btn btn-dark nowrap dropdown-toggle" id="toggle_fav_tab_btn" onclick="Renderer.toggle_fav_tab();">
-        <i class="ml-1 fas fa-shopping-cart"></i>
-        <span>Корзина</span>
-      </a>
+        <td colspan="2">
+          <!-- Favourite -->
+          <a class="btn btn-dark nowrap dropdown-toggle" id="toggle_fav_tab_btn" onclick="Renderer.toggle_fav_tab();">
+            <i class="ml-1 fas fa-shopping-cart"></i>
+            <span>Корзина</span>
+          </a>
+        </td>
 
-      <!-- Full List -->
-      {% if render_mode == 'price_list' %}
-      <a class="btn btn-dark nowrap"   onclick="Searcher.make_query({q:''})">
-        <i class="fas fa-list ml-1" style=""></i>
-        <span>Полный список</span>
-      </a>
-      {% elif render_mode == 'single_item' %}
-        <a class="btn btn-dark nowrap"  href="/">На Главную</a>
-      {% endif %}
+      </tr>
+      <tr>
+        <td colspan="2" class="left">
+          <!-- Dropdown -->
+          <div class="dropdown" style="width: 100%">
+            <button class="btn btn-dark dropdown-toggle nowrap max-fill" type="button" id="dropdownMenuButton"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <i class="ml-1 fas fa-bars"></i>
+              Категории
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+              {% for cat_id, category, count in counted_categories %}
+                {% if render_mode == 'price_list' %}
+                  <a class="dropdown-item noselect" onclick="Searcher.make_query({cat: '{{cat_id}}', silent: true})">{{category}} ({{count}})</a>
+                {% elif render_mode == 'single_item' %}
+                  <a class="dropdown-item noselect" href="/?cat={{cat_id}}">{{category}} ({{count}})</a>
+                {% endif %}
+              {%endfor%}
+            </div>
+          </div>
+        </td>
 
-      <!-- Contacts -->
-      <a class="btn btn-dark"  onclick='Renderer.toggle_contacts()'><i class="fas fa-phone"></i></a>
+        <td class="right">
+           <!-- Contacts -->
+           <a class="btn btn-dark"  onclick='Renderer.toggle_contacts()'><i class="fas fa-phone"></i></a>
+        </td>
+      </tr>
 
-
-      <!-- Dropdown -->
-      <div class="dropdown">
-        <button class="btn btn-dark dropdown-toggle nowrap max-fill" type="button" id="dropdownMenuButton"
-                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          <i class="ml-1 fas fa-bars"></i>
-          Категории
-        </button>
-        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-          {% for cat_id, category, count in counted_categories %}
-            {% if render_mode == 'price_list' %}
-              <a class="dropdown-item noselect" onclick="Searcher.make_query({cat: '{{cat_id}}', silent: true})">{{category}} ({{count}})</a>
-            {% elif render_mode == 'single_item' %}
-              <a class="dropdown-item noselect" href="/?cat={{cat_id}}">{{category}} ({{count}})</a>
-            {% endif %}
-          {%endfor%}
-        </div>
-      </div>
-
-
-      <!-- Search Form -->
-
-        <div style="position: relative; display: inline-block; ">
-          <form id="search_form">
-            <input id="search" style="width: 100%" class="form-control nav-wide-cont" type="search" placeholder="Поиск" autocomplete="off" aria-label="Search" value="{{query}}">
-          </form>
-        </div>
-
-        <button class="btn btn-outline-success my-sm-0" onclick="$('#search_form').submit()">
+      <tr>
+        <td colspan="2">
+          <!-- Search Form -->
+          <div style="position: relative; display: inline-block; width: 100%">
+            <form id="search_form">
+              <input id="search" style="width: 100%" class="form-control nav-wide-cont" type="search" placeholder="Поиск" autocomplete="off" aria-label="Search" value="{{query}}">
+            </form>
+          </div>
+        </td>
+        <td class="right">
+          <button class="btn btn-outline-success my-sm-0" onclick="$('#search_form').submit()">
           <i class=" fas fa-search"></i>
-        </button>
-
-        <div id="fav_container" style="height: 0px;"></div>
+          </button>
+        </td>
+      </tr>
+    </table>
+    <div id="fav_container" style="height: 0px;"></div>
   </nav>
 
 <script>

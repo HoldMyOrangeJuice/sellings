@@ -1,4 +1,7 @@
-scrolled = ()=>{
+"use strict"
+
+function scrolled()
+{
     return (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
 }
 
@@ -10,6 +13,8 @@ function isMobile()
   }
   catch(e){ return false; }
 }
+
+
 
 const DEF_BLANK_VAL_TEXT = "-";
 const DEF_BLANK_VAL_NUM = "?";
@@ -517,7 +522,8 @@ class Renderer
                 this.fill_frame(category, item);
             }
         }
-        ensure_textarea_size();
+        if (ADMIN)
+            ensure_textarea_size();
     }
 
     static toggle_contacts()
@@ -743,7 +749,7 @@ function handle_image_click(clicked)
 
 
 
-photos = []
+let photos = []
 let current = null;
 
 

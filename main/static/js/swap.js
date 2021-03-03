@@ -1,3 +1,5 @@
+'use strict';
+
 function listen_to_swaps(jq, cb)
 {
     let dist, startX, startY;

@@ -1,3 +1,5 @@
+'use strict';
+
 function genSaveItemBtn(item_id)
 {
     return `<button class='btn btn-warning'
