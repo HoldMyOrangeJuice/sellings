@@ -1,9 +1,7 @@
 'use strict';
 
-class HtmlGen
+class HtmlGen extends IHtmlGen
 {
-
-
     static gen_image_viewer(active_path, images)
     {
         let image_icons = ''
@@ -46,263 +44,12 @@ class HtmlGen
             </div>`
     }
 
-    static gen_select(cat)
-    {
-        let select = ''
-        for (let category of Object.values(CATS))
-        {
-        if (category === cat)
-            select +="<option selected='selected'>" + category + "</option>"
-        else
-            select +="<option>" + category + "</option>"
-        }
-        return select
-    }
-
     static gen_main_frame_content()
     {
         return `<div class="flex"><p id='empty-query-banner'></p></div>
                 <div id="table-container">
                     <!-- to be filled with JS -->
                 </div>`
-    }
-    static gen_three_dots(item_id, subcat_id, fav)
-    {
-        return `<!-- Three dots menu -->
-        <div style='display: inline-block' class="dropdown three-dots">
-          <button class="three-dots-btn" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <i class="fas fa-ellipsis-v" style='font-size: 15px;'></i>
-          </button>
-          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            <div class="dropdown-item" data-item_id='${item_id}' data-subcat_idx=${subcat_id} data-role='cart-action' data-checked='${fav}' onclick='edit_favourite(${item_id}, ${subcat_id})'>
-                ${fav?
-                    '<span>Убрать из корзины</span><i style="margin-left: 4px; color: gray" class="fas fa-trash-alt"></i>':
-                    '<span>Добавить в корзину</span><i style="margin-left: 2px; color: gray" class="fas fa-shopping-cart"></i>'}
-            </div>
-            <div class="dropdown-item" onclick='OrderForm.open(${item_id}, ${subcat_id})'>
-                <span>Заказать</span><i style='margin-left: 5px; color: gray' class="fas fa-money-check"></i>
-            </div>
-          </div>
-        </div>
-        <!-- /Three dots menu -->`
-    }
-
-    static gen_adm_subcat(item_id, subcat_id, code, param, price, amount, fav)
-    {
-        return`
-        <tr class='${fav?'fav':''}' data-subcat_id='${subcat_id}' data-item_id='${item_id}' data-role='subcat_cont'>
-
-            <td>
-                ${code || DEF_BLANK_VAL_TEXT}
-            </td>
-
-            <td>
-                ${param || DEF_BLANK_VAL_TEXT}
-            </td>
-
-            <td>
-                <span class='nowrap'>
-                    ${price || 0} грн.
-                </span>
-            </td>
-
-            <td>
-                <span class='nowrap'>
-                        ${amount || DEF_BLANK_VAL_NUM} шт.
-                </span>
-            </td>
-            <td style='position: relative; padding-left: 0; padding-right: 0;'>
-                ${this.gen_three_dots(item_id, subcat_id, fav)}
-            </td>
-        </tr>
-        `
-    }
-    static gen_usr_subcat(item_id, subcat_id, code, param, price, amount, fav)
-    {
-        return`${param?
-            `<tr>
-            <td colspan=4 style="font-weight: 600">
-                ${param || DEF_BLANK_VAL_TEXT}
-            </td>
-        </tr>`:""
-    }
-
-
-        <tr class='${fav?'fav':''}' data-subcat_id='${subcat_id}' data-item_id='${item_id}' data-role='subcat_cont'>
-
-            <td>
-                ${code || DEF_BLANK_VAL_TEXT}
-            </td>
-
-            <td>
-                <span class='nowrap'>
-                    ${price || 0} грн.
-                </span>
-            </td>
-
-            <td>
-                <span class='nowrap'>
-                        ${amount || DEF_BLANK_VAL_NUM} шт.
-                </span>
-            </td>
-            <td style='position: relative; padding-left: 0; padding-right: 0;'>
-                ${HtmlGen.gen_three_dots(item_id, subcat_id, fav)}
-            </td>
-        </tr>
-        `
-    }
-    static gen_subcat(item_id, idx, code, param, price, amount, fav)
-    {
-        if (ADMIN)
-            return HtmlGen.gen_adm_subcat(item_id, idx, code, param, price, amount, fav);
-        else
-            return HtmlGen.gen_usr_subcat(item_id, idx, code, param, price, amount, fav);
-    }
-
-    static gen_subcats_table(subcats, item_id)
-    {
-
-        let html = ""
-        for (let [idx, subcat] of subcats.entries())
-        {
-            html += HtmlGen.gen_subcat(item_id, idx, subcat.code, subcat.param, subcat.price, subcat.amount, subcat.fav)
-        }
-        return `<table border="0" data-subcat_table='${item_id}' style='width: 100%'>
-            <tbody>
-                ${html}
-            </tbody>
-        </table>`;
-    }
-
-    static gen_photo_image_html(item_id, file, temp)
-    {
-        let uniqueid = uuid();
-        // file arg is serverside filename or instance of File if temp=True
-        if (temp)
-        {
-            let reader  = new FileReader();
-            reader.onloadend = () => {
-                $(`img[data-item_id='${item_id}'][data-uuid-promise='${uniqueid}']`).attr("src", reader.result).removeAttr('data-uuid-promise');
-            }
-            reader.readAsDataURL(file);
-        }
-
-        return `<img src='${temp?get_image_path("placeholder"):get_image_path(file)}'
-                  class='image ${temp?'temp_image': ''}' ${temp?"":`id='${file}'`}
-                  data-item_id='${item_id}'
-                  data-role='illustration'
-                  ${temp?`data-uuid-promise='${uniqueid}'`:""}
-                  ${temp?"":`onclick=handle_image_click(this)`}>`
-    }
-
-    // fill photo bulk section in table
-    static gen_image_bulk(paths, item_id)
-    {
-        if (ADMIN)
-            return HtmlGen.gen_admin_image_bulk(paths, item_id);
-        return HtmlGen.gen_user_image_bulk (paths, item_id);
-    }
-
-    static gen_admin_image_bulk(paths, item_id)
-    {
-        let html = `<div data-item_id='${item_id}' data-role='image_bulk' class='image_bulk'>`;
-        for (let path of paths)
-        {
-            html += HtmlGen.gen_photo_image_html(item_id, path);
-        }
-        html += "</div>";
-        html += `
-                <button class='btn btn-danger'
-                        data-item_id='${item_id}'
-                        data-role='delete_images'
-                        style='display:none'
-                        onclick='request_photos_delete(${item_id})'>
-                </button>`
-        return html;
-    }
-
-    static gen_user_image_bulk(paths, item_id)
-    {
-        // bulk wrapper
-        let html = `<div data-item_id='${item_id}' data-role='image_bulk' class='image_bulk'>`;
-
-        for (let [i, path] of paths.entries())
-        {
-
-            html += `<div class='${i == 0?'bulk_main':'bulk_item'}'
-                          data-role='image_icon'
-                          data-path='${path}'
-                          onclick='handle_image_click(this)'
-                          style='background-image: url("${get_min_image_path(path)}");'></div>`
-        }
-        html += "</div>";
-
-        return html;
-    }
-
-    static gen_adm_frame_entry(item)
-    {
-        return `
-        <table class='table'>
-            <tr data-item_id='${item.id}' data-role='main_item_data'>
-                <td>
-                    <textarea rows='1' id='edit_name_"${item.id}' style='overflow:hidden' class='edit-form input-text text-form-trackable'>${item.name}</textarea>
-                </td>
-                <td colspan=0>
-                    ${HtmlGen.gen_subcats_table(item.subcats, item.id)}
-
-
-                        <button class='btn btn-success btn-lg btn-block'
-                                   style='margin-top: 10px'
-                                   onclick='Renderer.add_subcat_to(HtmlGen.gen_subcat(${item.id}, PageActions.count_subcats(${item.id}), "", "", 0, 0, false), ${item.id})'>
-                                   ${LANG.add}
-                           </button>
-                </td>
-
-                <td>
-                    <select id='edit_category_${item.id}' name='category' class='form-control mr-sm-2 text-form-trackable'> ${HtmlGen.gen_select(item.category)} "</select>"
-                </td>
-                <td>
-                    <textarea rows='1' id='edit_description_${item.id}' onkeyup='textAreaAdjust(this)' style='overflow:hidden' class='edit-form input-text text-form-trackable'>${item.description}</textarea>
-                </td>
-                <td>
-                    <textarea rows='1' id='edit_condition_${item.id}' onkeyup='textAreaAdjust(this)' style='overflow:hidden' class='edit-form input-text text-form-trackable'>${item.condition}</textarea>
-                </td>
-
-               <td>
-                    <button class='btn btn-danger' onclick=delete_item('${item.id}')>${LANG.delete}</button>
-                    <hr>
-                    <button class='btn btn-warning'
-                            style='display:none'
-                            data-item_id='${item.id}'
-                            data-role='confirm_main_data_edit'
-                            onclick=update_item('${item.id}')>${LANG.save}
-                    </button>
-                </td>
-
-            </tr>
-
-            <tr data-item_id='${item.id}' data-role='photo_item_data'>
-                <td colspan='7'>
-                ${HtmlGen.gen_image_bulk(item.photo_paths, item.id)}
-
-
-                    <hr>
-                    <label for='${"edit-file-"+item.id}' class='btn btn-success'>
-                        ${LANG.add}
-                    </label>
-                    <form data-item_id='${item.id}' data-role='add_files_form'>
-                        <input type='file'
-                               data-item_id='${item.id}'
-                               data-role='add_files_input'
-                               multiple='multiple'
-                               class='hidden'
-                               name='photo'
-                               id='${"edit-file-"+item.id}'>
-                    </form>
-
-                </td>
-            </tr></table>`
     }
 
     static gen_usr_frame_entry(item)
@@ -447,6 +194,117 @@ class HtmlGen
                     </tbody>
                 </table>`)
         }
+    }
+
+    // utils
+    static gen_three_dots(item_id, subcat_id, fav)
+    {
+        return `<!-- Three dots menu -->
+        <div style='display: inline-block' class="dropdown three-dots">
+          <button class="three-dots-btn" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fas fa-ellipsis-v" style='font-size: 15px;'></i>
+          </button>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <div class="dropdown-item" data-item_id='${item_id}' data-subcat_idx=${subcat_id} data-role='cart-action' data-checked='${fav}' onclick='edit_favourite(${item_id}, ${subcat_id})'>
+                ${fav?
+                    '<span>Убрать из корзины</span><i style="margin-left: 4px; color: gray" class="fas fa-trash-alt"></i>':
+                    '<span>Добавить в корзину</span><i style="margin-left: 2px; color: gray" class="fas fa-shopping-cart"></i>'}
+            </div>
+            <div class="dropdown-item" onclick='OrderForm.open(${item_id}, ${subcat_id})'>
+                <span>Заказать</span><i style='margin-left: 5px; color: gray' class="fas fa-money-check"></i>
+            </div>
+          </div>
+        </div>
+        <!-- /Three dots menu -->`
+    }
+
+    static gen_subcats_table(subcats, item_id)
+    {
+
+        let html = ""
+        for (let [idx, subcat] of subcats.entries())
+        {
+            html += HtmlGen.gen_subcat(item_id, idx, subcat.code, subcat.param, subcat.price, subcat.amount, subcat.fav)
+        }
+        return `<table border="0" data-subcat_table='${item_id}' style='width: 100%'>
+            <tbody>
+                ${html}
+            </tbody>
+        </table>`;
+    }
+
+    static gen_photo_image_html(item_id, file, temp)
+    {
+        let uniqueid = uuid();
+
+        // file arg is serverside filename or instance of File if temp=True
+        if (temp)
+        {
+            let reader  = new FileReader();
+            reader.onloadend = () => {
+                $(`img[data-item_id='${item_id}'][data-uuid-promise='${uniqueid}']`).attr("src", reader.result).removeAttr('data-uuid-promise');
+            }
+            reader.readAsDataURL(file);
+        }
+
+        return `<img src='${temp?get_image_path("placeholder"):get_image_path(file)}'
+                  class='image ${temp?'temp_image': ''}' ${temp?"":`id='${file}'`}
+                  data-item_id='${item_id}'
+                  data-role='illustration'
+                  ${temp?`data-uuid-promise='${uniqueid}'`:""}
+                  ${temp?"":`onclick=handle_image_click(this)`}>`
+    }
+
+    static gen_image_bulk(paths, item_id)
+    {
+        // bulk wrapper
+        let html = `<div data-item_id='${item_id}' data-role='image_bulk' class='image_bulk'>`;
+
+        for (let [i, path] of paths.entries())
+        {
+
+            html += `<div class='${i == 0?'bulk_main':'bulk_item'}'
+                          data-role='image_icon'
+                          data-path='${path}'
+                          onclick='handle_image_click(this)'
+                          style='background-image: url("${get_min_image_path(path)}");'></div>`
+        }
+        html += "</div>";
+
+        return html;
+    }
+
+    static gen_subcat(item_id, subcat_id, code, param, price, amount, fav)
+    {
+        return`${param?
+            `<tr>
+            <td colspan=4 style="font-weight: 600">
+                ${param || DEF_BLANK_VAL_TEXT}
+            </td>
+        </tr>`:""}
+
+        <tr class='${fav?'fav':''}' data-subcat_id='${subcat_id}' data-item_id='${item_id}' data-role='subcat_cont'>
+
+            <td>
+                ${code || DEF_BLANK_VAL_TEXT}
+            </td>
+
+            <td>
+                <span class='nowrap'>
+                    ${price || 0} грн.
+                </span>
+            </td>
+
+            <td>
+                <span class='nowrap'>
+                        ${amount || DEF_BLANK_VAL_NUM} шт.
+                </span>
+            </td>
+            <td style='position: relative; padding-left: 0; padding-right: 0;'>
+                ${HtmlGen.gen_three_dots(item_id, subcat_id, fav)}
+            </td>
+        </tr>
+        `
     }
 
 }

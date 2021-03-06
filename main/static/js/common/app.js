@@ -39,7 +39,13 @@ const LANG = {
     desc: "Описание",
     category:"категории"
 }
-
+function uuid()
+{
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
 function get_image_path(filename)
 {
     return `${MEDIA_URL}images/items/${filename}`
@@ -117,7 +123,7 @@ class Searcher
 
         let data = {part: this.part, query: this.query, category: this.category, item_id: this.item_id};
 
-        let [categorized_items, parts] = await Networker.fetch(data);
+        let [categorized_items, parts, total] = await Networker.fetch(data);
 
         this.fetch_blocked = false;
 
@@ -137,7 +143,7 @@ class Searcher
         }
         else
         {
-            DOMManager.get_empty_query_banner().empty();
+            DOMManager.get_empty_query_banner().html(`Найдено результатов: ${total}`);
             Renderer.add_to_table(categorized_items)
         }
     }
@@ -261,9 +267,9 @@ class Networker extends NetworkerBase
 
         if (response.success)
         {
-            return [response.payload.items, response.payload.parts]
+            return [response.payload.items, response.payload.parts, response.payload.total]
         }
-        return [[], 0]
+        return [[], 0, 0]
     }
 
     static async get_hints()
@@ -884,10 +890,10 @@ function handle_search_submit()
 }
 
 
-$(document).ready( ()=>
+$(document).ready( function()
 {
     $('#main').append( HtmlGen.gen_main_frame_content() )
-    document.getElementById('search_form').onsubmit = e => {console.log("submit form"); return handle_search_submit()};
+    document.getElementById('search_form').onsubmit = function(){return handle_search_submit()};
 })
 
 async function do_autocomplete()
@@ -896,16 +902,14 @@ async function do_autocomplete()
     autocomplete(response.payload.items);
 }
 
-$('#search').on('input', ()=>
-{
+$('#search').on('input', function(){
     do_autocomplete();
 });
 
 let prevscroll = 0;
 if (isMobile())
 {
-    document.onscroll = (e)=>
-    {
+    document.onscroll = function(e) {
         let diff = scrolled() - prevscroll;
         prevscroll = scrolled();
         let height = $(".mynavbar")[0].clientHeight+5;

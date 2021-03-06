@@ -18,7 +18,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, re_path
 
-from main.api import handle_error, AdminApi, UserApi
+from main.api import AdminApi, UserApi
 from main.views import price_page, login_view, item_page, favicon
 from django.conf import settings
 
@@ -30,7 +30,7 @@ urlpatterns = [
     re_path(UserApi.make_path(), UserApi.dispatch),
 
     path('login', login_view),
-    path('error', handle_error),
+
     path('favicon.ico', favicon),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

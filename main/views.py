@@ -2,18 +2,21 @@ import json
 import math
 import os
 
+from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import AuthenticationForm
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
 from Sellings.settings import STATIC_ROOT
+from main.forms import InitialPageDataForm
 from utils.network.ajax import Response
 from main.models import Item
 
 
 class SiteSettings:
-    from django.conf import settings
+    from django.conf import settings as s
+    settings = s
 
     title = "Распродажа б/у оборудования и предметов сервировки для дома и HoReCa"
 
@@ -100,140 +103,30 @@ def count_cats():
 
 
 def gtp(request):
-    if not mobile(request):
-        return "desktop"
-    return "mobile"
+    return "mobile" if request.mobile else "desktop"
 
 
 def price_page(request):
-    query = None
-    cat_id = None
-    if request.GET.get('q'):
-        query = request.GET.get('q')
-    if request.GET.get('cat'):
-        cat_id = request.GET.get('cat')
+    form = InitialPageDataForm(request.GET)
+    query = cat_id = None
+
+    if form.is_valid():
+        form_data = form.cleaned_data
+
+        query = form_data.get('q')
+        cat_id = form_data.get('cat')
+
     if not query and not cat_id:
         query = ""
-    return render_with_settings(request=request, template_name=f"{gtp(request)}/price_template.html", context={"admin": request.user.is_superuser,
-                                                           "categories": json.dumps(CATEGORIES),
-                                                           "counted_categories": count_cats(),
-                                                           'render_mode': 'price_list',
-                                                           'query': query,
-                                                           'cat_id': cat_id})
 
-
-def login_view(request):
-    if request.method == "POST":
-        u = request.POST.get("username")
-        p = request.POST.get("password")
-        user = authenticate(username=u, password=p)
-        if user:
-            login(request, user)
-
-    if request.user.is_anonymous:
-        return render_with_settings(request=request, template_name="login.html", context={"form": AuthenticationForm()})
-
-    else:
-        return redirect("/")
-
-
-def mobile(request):
-    import re
-    """Return True if the request comes from a mobile device."""
-    MOBILE_AGENT_RE = re.compile(r".*(iphone|mobile|androidtouch)", re.IGNORECASE)
-    if MOBILE_AGENT_RE.match(request.META['HTTP_USER_AGENT']):
-        return True
-    else:
-        return False
-
-
-def serialize_items(items=None, categorized=None, session=None):
-
-    if items is not None:
-        items = items.order_by("-clicks")
-        return [item.serialize(session) for item in items]
-
-    if categorized is not None:
-        return [[category, [item.serialize(session=session) for item in items]]
-                for category, items in categorized if len(items) != 0]
-
-    raise Exception("Nothing was passed to serialize function, probably a bug")
-
-
-def get_items_page(cat=None, query=None, part=0, id=None, part_size=None, session=None, ids=None, order_by_weight=False):
-
-    ITEMS_PER_BATCH = part_size
-    items = Item.find(cat=cat, query=query, id=id, ids=ids)
-
-    if not order_by_weight:
-        # order by clicks and category
-        items = items.order_by("-clicks")
-
-    max_parts = math.ceil(len(items) / ITEMS_PER_BATCH)
-
-    part_of_items = items[part * ITEMS_PER_BATCH: (part + 1) * ITEMS_PER_BATCH]
-
-    if order_by_weight:
-        categorized = [["ordered", part_of_items]]
-    else:
-        categorized = categorize_items(part_of_items, order_by_clicks=True)
-
-    return serialize_items(categorized=categorized, session=session), max_parts
-
-
-def serialize_query(query=None, cat=None, id=None, p=0, part_size=10, user_session=None):
-    print(f"search query: {query} | cat: {cat} | id: {id} | page: {p}\n keeps order: {bool(query)}")
-
-    items, parts = get_items_page(query=query,
-                                  cat=cat,
-                                  id=id,
-                                  part=p,
-                                  session=user_session,
-                                  part_size=part_size,
-                                  order_by_weight=bool(query))
-
-    return Response(success=True, message='query success', payload={'items': items, 'parts': parts})
-
-
-def get_hints(q):
-    items = []
-    if q != "":
-        items = Item.find(query=q)
-
-    names = []
-    for item in items:
-        names.append(item.name)
-    return Response(success=True, message="", payload={"sug": names[:10]})
-
-
-def fetch(id=None, ids=None, query=None, category=None, max_data=None, sess=None):
-    """Fetch max_data items. No idea what it does tbh"""
-    items = []
-
-    if id:
-        items.append(Item.objects.get(id=id))
-    if ids:
-        items.extend([Item.objects.get(id=id) for id in ids])
-    if query:
-        items.append(Item.find(query=query))
-    if category:
-        items.append(Item.find(cat=category))
-
-    ser = items[:max_data] if max_data != 0 else items
-
-    return Response(success=True, message='fetch success', payload={'items': serialize_items(items=ser, session=sess)})
-
-
-def validate_favs(request):
-    """ Make sure user does not have any deleted ids in session's fav """
-    data = dict(request.session.get('fav-ids') or {})
-
-    for item_str_id in data.keys() or []:
-        try:
-            Item.objects.get(id=int(item_str_id))
-        except:
-            del request.session['fav-ids'][item_str_id]
-            continue
+    return render_with_settings(request=request,
+                                template_name=f"{gtp(request)}/price_template.html",
+                                context={"admin": request.user.is_superuser,
+                                         "categories": CATEGORIES,
+                                         "counted_categories": count_cats(),
+                                         'render_mode': 'price_list',
+                                         'query': query,
+                                         'cat_id': cat_id})
 
 
 def item_page(request):
@@ -242,15 +135,86 @@ def item_page(request):
 
     if not item:
         return HttpResponse("<h1>Страница не найдена.</h1><button onclick='history.back();'>Назад</button>")
-    item = item[0]
 
+    item = item[0]
     item.add_click()
 
-    return render_with_settings(request=request, template_name=f"{gtp(request)}/item_page.html", context={'render_mode': 'single_item',
-                                                      'item': item,
-                                                      "categories": json.dumps(CATEGORIES),
-                                                      'json_item': json.dumps(item.serialize(session=request.session)),
-                                                      "counted_categories": count_cats()})
+    return render_with_settings(request=request,
+                                template_name=f'{gtp(request)}/item_page.html',
+                                context={'render_mode': 'single_item',
+                                         'item': item,
+                                         'categories': CATEGORIES,
+                                         'counted_categories': count_cats()})
+
+
+def login_view(request):
+    form = AuthenticationForm(data=request.POST)
+
+    if not form.is_valid():
+
+        return render_with_settings(request=request,
+                                    template_name="login.html",
+                                    context={"form": form})
+
+    data = form.cleaned_data
+    u = data.get("username")
+    p = data.get("password")
+
+    user = authenticate(username=u, password=p)
+
+    if user:
+        login(request, user)
+
+    if request.user.is_anonymous:
+        return render_with_settings(request=request,
+                                    template_name="login.html",
+                                    context={"form": AuthenticationForm()})
+
+    else:
+        return redirect(settings.LOGIN_REDIRECT_URL)
+
+
+def get_items_page(cat=None, query=None, id=None, ids=None,
+                   part_size=None, part=0,
+                   session=None,
+                   order_by_weight=False):
+
+    items = Item.find(cat=cat, query=query, id=id, ids=ids)
+
+    if not order_by_weight:
+        # order by clicks and category
+        items = items.order_by("-clicks")
+
+    max_parts = math.ceil(len(items) / part_size)
+
+    part_of_items = items[part * part_size: (part + 1) * part_size]
+
+    if order_by_weight:
+        categorized = [["ordered", part_of_items]]
+    else:
+        categorized = categorize_items(part_of_items, order_by_clicks=True)
+
+    return Item.serialize_items(categorized=categorized, session=session), max_parts, len(items)
+
+
+def serialize_query(query=None, cat=None, id=None,
+                    p=0, part_size=10,
+                    user_session=None):
+
+    items, parts, total = get_items_page(query=query,
+                                         cat=cat,
+                                         id=id,
+                                         part=p,
+                                         session=user_session,
+                                         part_size=part_size,
+                                         order_by_weight=bool(query))
+
+    return Response(success=True,
+                    message='query success',
+                    payload={'items': items,
+                             'parts': parts,
+                             'total': total})
+
 
 def simplify(s):
     s = s.lower().replace(".", " "). \
@@ -263,20 +227,6 @@ def simplify(s):
     return s
 
 
-
-
-#gen_minified()
-#convert_all()
-#deleteFailedReferences()
-#deleteUnusedPhotos()
-#reloadData("E:/myFignya/programs/python/django-projects/Sellings/parse/exported.json")
-#reloadData("E:/myFignya/programs/python/django-projects/Sellings/parse/merged.json")
-#save()
-#fixNull()
-#deleteUnusedPhotos()
-#deleteFailedReferences()
-#xlToJson("E:/myFignya/programs/python/django-projects/Sellings/parse/full.xls")
-#merge_photos("parse/parsed.json", "parse/exported.json")
-
 def favicon(request):
-    return HttpResponse(open(f'{STATIC_ROOT}/favicon.ico', 'rb').read(), content_type='image/x-icon')
+    return HttpResponse(open(f'{STATIC_ROOT}/favicon.ico', 'rb').read(),
+                        content_type='image/x-icon')

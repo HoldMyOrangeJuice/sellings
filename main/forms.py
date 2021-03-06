@@ -2,13 +2,17 @@ from django import forms
 
 
 # POST
+from django.contrib.auth.forms import AuthenticationForm
+from django.forms import TextInput
+
+
 class EditItemForm(forms.Form):
     item_id = forms.IntegerField(required=True)
     name = forms.CharField(required=True, max_length=100)
     description = forms.CharField(required=True, max_length=100)
     condition = forms.CharField(required=True, max_length=100)
     category = forms.CharField(required=True, max_length=100)
-    photos = forms.FileField(required=True)
+    photos = forms.FileField(required=False)
 
     subcats = forms.JSONField(required=True)
 
@@ -27,7 +31,6 @@ class DeleteItemForm(forms.Form):
     item_id = forms.IntegerField(required=True)
 
 
-
 class EditFavouriteForm(forms.Form):
     item_id = forms.IntegerField(required=True)
     subcat_idx = forms.IntegerField(required=True)
@@ -44,11 +47,15 @@ class OrderForm(forms.Form):
 
 class SavePhotosForm(forms.Form):
     item_id = forms.IntegerField(required=True)
+    photos = forms.FileField(required=True)
+
+
+class DeletePhotosForm(forms.Form):
+    item_id = forms.IntegerField(required=True)
+    filenames = forms.JSONField(required=True, max_length=500)
 
 
 # GET
-
-
 class GetHintsForm(forms.Form):
     query = forms.CharField(required=True, max_length=100)
 
@@ -60,5 +67,10 @@ class FetchItemsForm(forms.Form):
     item_ids = forms.IntegerField(required=False)
     part = forms.IntegerField(required=True)
     part_size = forms.IntegerField(required=True)
+
+
+class InitialPageDataForm(forms.Form):
+    q = forms.CharField(max_length=100, required=False)
+    cat = forms.IntegerField(required=False)
 
 

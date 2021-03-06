@@ -29,7 +29,7 @@ function delayedResize ()
 
 function ensure_textarea_size()
 {
-    for (elem of $(".auto-adjust"))
+    for (let elem of $(".auto-adjust"))
     {
         resize(elem);
     }

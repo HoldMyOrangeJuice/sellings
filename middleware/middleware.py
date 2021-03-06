@@ -1,9 +1,14 @@
+from django.conf import settings
+from django.contrib.auth.middleware import AuthenticationMiddleware, get_user
+from django.contrib.auth.models import AnonymousUser
+from django.utils.functional import SimpleLazyObject
+
+
 def get_ip_middleware(get_response):
 
     def middleware(request):
 
         import re
-        """Return True if the request comes from a mobile device."""
         MOBILE_AGENT_RE = re.compile(r".*(iphone|mobile|androidtouch)", re.IGNORECASE)
         mobile = MOBILE_AGENT_RE.match(request.META['HTTP_USER_AGENT'])
         request.__setattr__("mobile", mobile)
@@ -20,3 +25,20 @@ def get_ip_middleware(get_response):
         return response
 
     return middleware
+
+
+class CustomAnonymousAuthMiddleware(AuthenticationMiddleware):
+    def process_request(self, request):
+        assert hasattr(request, 'session'), (
+            "The Django authentication middleware requires session middleware "
+            "to be installed. Edit your MIDDLEWARE setting to insert "
+            "'django.contrib.sessions.middleware.SessionMiddleware' before "
+            "'django.contrib.auth.middleware.AuthenticationMiddleware'."
+        )
+        user = get_user(request)
+
+        # swap users here
+        if isinstance(user, AnonymousUser):
+            user = settings.ANONYMOUS_MODEL(request)
+
+        request.user = SimpleLazyObject(lambda: user)

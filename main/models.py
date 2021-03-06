@@ -2,6 +2,7 @@ import random
 import uuid
 
 import jsonfield
+from django.contrib.auth.models import AnonymousUser as DjangoAnonymous
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import models
 
@@ -163,7 +164,21 @@ class Item(models.Model):
         return items
 
     @staticmethod
-    def save_photos(request):
+    def serialize_items(items=None, categorized=None, session=None):
+
+        if items is not None:
+            items = items.order_by("-clicks")
+            return [item.serialize(session) for item in items]
+
+        if categorized is not None:
+            return [
+                 (category, [item.serialize(session=session) for item in items])
+                 for category, items in categorized if len(items) != 0
+            ]
+
+        raise Exception("Nothing was passed to serialize function, probably a bug")
+
+    def save_photos(self, request):
         file_names = []
 
         from utils.dbutils.convert import convert_to_webp
@@ -178,6 +193,8 @@ class Item(models.Model):
             filename = convert_to_webp(f"{MEDIA_ROOT}images/items", filename)
             file_names.append(filename)
 
+        self.photo_paths.append(file_names)
+        self.save()
         return file_names
 
 
@@ -187,6 +204,51 @@ class Order(models.Model):
     message = models.TextField()
     item_id = models.IntegerField()
 
+
+class CustomUser:
+
+    def __init__(self, request):
+        self.request = request
+
+    def validate_favs(self):
+        """ Make sure user does not have any deleted ids in session's fav """
+        data = dict(self.request.session.get('fav-ids') or {})
+
+        for item_id in data.keys() or []:
+            if not Item.objects.filter(id=int(item_id)).exists():
+                del self.request.session['fav-ids'][item_id]
+
+    def get_favourite_json(self):
+
+        self.validate_favs()
+
+        valid_items = self.request.session.get('fav-ids') or {}
+        items = []
+
+        for item_id in valid_items.keys():
+            item = Item.objects.get(id=int(item_id))
+            items.extend(
+                [item.serialize(subcat_idx=subcat_idx)
+                 for subcat_idx in valid_items[item_id]
+                 ])
+
+        return items
+
+    def edit_favourite(self, item_id, item_subcat, favourite):
+        fav_user_data = self.request.session.get('fav-ids') or {}
+
+        fav_indexes = fav_user_data.get(item_id) or []
+
+        if favourite:
+            fav_indexes.append(item_subcat)
+        else:
+            fav_indexes = [x for x in
+                           fav_user_data.get(item_id) or []
+                           if x != item_subcat]
+
+        fav_user_data[item_id] = fav_indexes
+
+        self.request.session['fav-ids'] = fav_user_data
 
 
 

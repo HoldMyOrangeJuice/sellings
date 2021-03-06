@@ -3,7 +3,7 @@ window.onerror = (msg, url, lineNo, columnNo, error) =>
     data = `${msg} at ${url}: line ${lineNo}:${columnNo} Version ${VERSION}`
     try
     {
-        fetch(`/error?data=${data}`)
+        fetch(`/api/user/error?data=${data}`)
     }
     catch(e)
     {
