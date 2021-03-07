@@ -264,7 +264,7 @@ class HtmlGen
             img_style = "bulk_item";
             let cont_width = $("#table-container").width() - paths.length * 40;
             let side = Math.min(200, cont_width/paths.length);
-            console.log(side);
+
             html += `<div class='${img_style}'
                           style='width: ${side}px; height: ${side}px; background-image: url("${get_min_image_path(path)}");'
                           data-role='image_icon'

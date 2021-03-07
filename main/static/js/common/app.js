@@ -46,15 +46,22 @@ function uuid()
     return v.toString(16);
   });
 }
-function get_image_path(filename)
+function get_image_path(file_or_files)
 {
-    return `${MEDIA_URL}images/items/${filename}`
+    if (file_or_files instanceof Array)
+    {
+        return file_or_files.map(i=>get_image_path(i));
+    }
+    return `${MEDIA_URL}images/items/${file_or_files}`
 }
 
 function get_min_image_path(filename)
 {
     return `${MEDIA_URL}images/min/${filename}`
 }
+
+registerCustomFilter("media", get_image_path);
+registerCustomFilter("min", get_min_image_path);
 
 class Searcher
 {
@@ -117,7 +124,9 @@ class Searcher
 
     static async load_more()
     {
-        if (this.disabled || this.fetch_blocked || this.part >= this.max_parts)return;
+
+        if (this.disabled || this.fetch_blocked || this.part >= this.max_parts)
+            return;
 
         this.fetch_blocked = true;
 
@@ -134,16 +143,17 @@ class Searcher
         for (let [category, items] of categorized_items)
             this.items.push(...items);
 
+
         if (parts == 0)
         {
             // empty query for first page
-            DOMManager.get_empty_query_banner().html(`Ни один предмет не подошел к запросу<br>
+            DOM.queryBanner().html(`Ни один предмет не подошел к запросу<br>
             "${ Searcher.query || CATS[Searcher.cat] || Searcher.id }".
             <br>`)
         }
         else
         {
-            DOMManager.get_empty_query_banner().html(`Найдено результатов: ${total}`);
+            DOM.queryBanner().html(`Найдено результатов: ${total}`);
             Renderer.add_to_table(categorized_items)
         }
     }
@@ -334,28 +344,33 @@ class PageActions
     }
 }
 
-class DOMManager
+class DOM
 {
     // main item table
-    static get_empty_query_banner()
+    static queryBanner()
     {
-        return $('#empty-query-banner')
+        return new Element('#empty-query-banner')
     }
 
-    static get_category_frame(category)
+    static catFrame(category)
     {
-        return $(`[data-category='${category}'][data-role="category-frame"]`)
+        return new Element(`[data-category='${category}'][data-role="category-frame"]`)
     }
 
     // parent of all category containers
-    static get_table_container()
+    static tableContainer()
     {
-        return $(`#table-container`);
+        return new Element(`#table-container`);
     }
 
-    static get_mono_frame()
+    static monoFrame()
     {
-        return $("#mono-table");
+        return new Element("#mono-table");
+    }
+
+    static favouriteTable()
+    {
+        return new Element("#fav_container")
     }
 
     // order
@@ -478,7 +493,7 @@ class Renderer
     static wipe_content()
     {
         // scroll to top to avoid loading like half of table
-        DOMManager.get_table_container().empty();
+        DOM.tableContainer().empty();
         console.log("scroll");
         window.scrollTo(0, 0);
     }
@@ -499,21 +514,20 @@ class Renderer
         if ( Searcher.sorts_by_category() )
         {
             // append to category
-            if ( DOMManager.get_category_frame(category).length == 0 )
+            if ( DOM.catFrame(category).length == 0 )
             {
-                DOMManager.get_table_container().append( HtmlGen.gen_cat_frame(category) )
+                DOM.tableContainer().addComponent(CategoryFrame, {category})
             }
-
-            DOMManager.get_category_frame(category).append( HtmlGen.gen_frame_entry(item))
+            DOM.catFrame(category).addComponent(FrameEntry, {item})
         }
         else
         {
             // append to end
-            if ( DOMManager.get_mono_frame().length == 0 )
+            if ( DOM.monoFrame().length == 0 )
             {
-                DOMManager.get_table_container().append( HtmlGen.gen_mono_frame() )
+                DOM.tableContainer().addComponent(MonoFrame)
             }
-            DOMManager.get_mono_frame().append( HtmlGen.gen_frame_entry(item) );
+            DOM.monoFrame().addComponent(FrameEntry, {item} );
         }
     }
 
@@ -525,6 +539,7 @@ class Renderer
         {
             for (let item of items)
             {
+                console.log("add item to table:", category, item);
                 this.fill_frame(category, item);
             }
         }
@@ -560,11 +575,12 @@ class Renderer
         let bottom = offsetBottom(navbar[0]);
 
         $(`#fav_container`).empty();
-        //$(`#fav_container`).css("top", bottom + "px")
         $(`#fav_container`).css("height", $(window).height() - bottom + "px")
         $(`#fav_container`).addClass('fav_opened')
+
         PageActions.lock_scroll();
-        HtmlGen.gen_fav_table(fav_items);
+
+        DOM.favouriteTable().addComponent(FavouriteTable, {fav_items})
     }
 
     static open_photo_view_window(elem_clicked, parent)
@@ -588,12 +604,18 @@ class Renderer
 
         }
 
-        // show window
-        let html = HtmlGen.gen_image_viewer(photos[current], photos);
-        $('body').append(html);
+        let context = {
+            active: photos[current],
+            icons: photos
+        };
 
-        PageActions.lock_scroll();
-        listen_to_swaps($('#image_viewer'), (dir)=>{if (dir == "<-")prev();else next();})
+        new Element('body').addComponent(ImageViewer, context);
+
+        listen_to_swaps($('#image_viewer'),
+        (dir)=>{if (dir == "<-")
+        prev();
+        else next();
+        })
 
 
         const show = (i) =>
@@ -892,8 +914,11 @@ function handle_search_submit()
 
 $(document).ready( function()
 {
-    $('#main').append( HtmlGen.gen_main_frame_content() )
-    document.getElementById('search_form').onsubmit = function(){return handle_search_submit()};
+    new Element('#main').addComponent(MainFrame);
+    document.getElementById('search_form').onsubmit = function ()
+    {
+        return handle_search_submit()
+    };
 })
 
 async function do_autocomplete()
