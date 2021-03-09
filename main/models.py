@@ -25,7 +25,7 @@ class Item(models.Model):
         self.clicks += 1
         self.save()
 
-    def flatten_subcat(self, subcat_idx):
+    def flatten_subcat(self, subcat_idx, session=None):
 
         subcat = self.subcats[subcat_idx]
         serialized = self.serialize()
@@ -34,6 +34,10 @@ class Item(models.Model):
         serialized['price'] = subcat['price']
         serialized['code'] = subcat.get('code')
         serialized['subcat_id'] = subcat_idx
+
+        if session:
+            serialized['fav'] = subcat_idx in (session.get("fav-ids") or {}).get(str(self.id) or [])
+
         return serialized
 
     def serialize(self, subcat_idx=None, session=None):
@@ -41,7 +45,7 @@ class Item(models.Model):
         entry = {}
 
         if subcat_idx is not None:
-            return self.flatten_subcat(subcat_idx)
+            return self.flatten_subcat(subcat_idx, session)
 
         entry["name"] = self.name
         entry["photo_paths"] = self.photo_paths
@@ -228,10 +232,10 @@ class CustomUser:
         for item_id in valid_items.keys():
             item = Item.objects.get(id=int(item_id))
             items.extend(
-                [item.serialize(subcat_idx=subcat_idx)
+                [item.serialize(subcat_idx=subcat_idx, session=self.request.session)
                  for subcat_idx in valid_items[item_id]
                  ])
-
+        print(items)
         return items
 
     def edit_favourite(self, item_id, item_subcat, favourite):

@@ -144,7 +144,7 @@ label
 .body-main
 {
      display: flex;
-     background: url("/static/images/parchment_big.webp");
+     background: url("/static/images/parchment_small_proc.png");
      -webkit-background-size: cover;
      -moz-background-size: cover;
      -o-background-size: cover;
@@ -168,6 +168,16 @@ label
     font-size: 1.5rem;
     color: #464646;
     width: 30%;
+    min-width: 500px;
+    margin-right: 0;
+}
+
+.body-title
+{
+    text-align: center;
+    font-size: 1.7rem;
+    color: var(--cdark);
+    width: 40%;
     min-width: 500px;
     margin-right: 0;
 }
@@ -277,6 +287,7 @@ padding: 20px 10px 20px 10px;
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
+    border-bottom: 5px solid var(--cdark)
 
 }
 .photo-row
@@ -301,12 +312,8 @@ padding: 20px 10px 20px 10px;
 {
      margin: 10px;
      background-color: #f3f3f3;
-     /* width: 100px;
-     height: 100px; */
-     /* width: var(--preview-img-size);
-     height: var(--preview-img-size); */
-     background-size: cover;
-     background-position: center center;
+     object-fit: cover;
+     object-position: 50% 50%;
 }
 
 .nice_image.sq

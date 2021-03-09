@@ -4,7 +4,10 @@
   --preview-img-size: 50px;
   --cdark: #343a40;
 }
-
+h2
+{
+    font-size: 1.5rem;
+}
 td, th
 {
 text-align:center
@@ -270,7 +273,7 @@ padding: 20px 10px 20px 10px;
 }
 
 
-.image_bulk
+/* .image_bulk
 {
     display: grid;
     grid-auto-flow: row;
@@ -279,13 +282,16 @@ padding: 20px 10px 20px 10px;
     justify-content: center;
     align-items: center;
      justify-items: center;
+} */
+
+.image_bulk {
+
 }
+
+
 .bulk_item
 {
-     width: var(--preview-img-size);
-     height: var(--preview-img-size);
-     background-size: cover;
-     background-position: center center;
+        object-fit: cover;
 }
 
 .bulk_main

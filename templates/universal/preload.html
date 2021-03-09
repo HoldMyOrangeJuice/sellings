@@ -52,29 +52,32 @@
 
 <script defer src="{% static 'js/swap.js' %}"></script>
 
+<script src="{% static 'js/common/addons.js' %}"></script>
 <script src="{% static 'js/common/errorhandler.js' %}"></script>
+<script src="{% static 'js/templates/VTL.js' %}"></script>
+
 
 {% if request.mobile %}
     <link href="{% static 'css/mobile/style.css' %}" rel="stylesheet">
     <link href="{% static 'css/mobile/sidebar.css' %}" rel="stylesheet">
-
-    <script src="{% static 'js/htmlgens/mobile-gen.js'%}"></script>
 {% else %}
     <link href="{% static 'css/desktop/style.css' %}" rel="stylesheet">
     <link href="{% static 'css/desktop/sidebar.css' %}" rel="stylesheet">
-
-    <script src="{% static 'js/htmlgens/desktop-gen.js'%}"></script>
 {% endif %}
 
 <link href="{% static 'css/common/common.css' %}" rel="stylesheet">
 
-<script src="{% static 'js/htmlgens/VTL.js' %}"></script>
-<script src="{% static 'js/htmlgens/components.js' %}"></script>
-
-<script src="{% static 'js/common/addons.js' %}"></script>
+<script src="{% static 'js/templates/components.js' %}"></script>
 <script src="{% static 'js/common/app.js' %}"></script>
 
 {% if admin %}
     <script src="{% static 'js/common/admin.js' %}"></script>
     <script src="{% static 'js/common/adminGen.js' %}"></script>
 {% endif %}
+
+
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,300;1,600&display=swap" rel="stylesheet">
+
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300&display=swap" rel="stylesheet">

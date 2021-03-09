@@ -9,3 +9,24 @@
     font-family: Consolas;
     margin: 0;
 }
+
+h3, p
+{
+    font-family: 'Raleway', sans-serif;
+}
+
+h1, h2
+{
+    font-style: italic;
+    font-weight: Semi-bold;
+}
+
+hr {
+  border: 0;
+  clear:both;
+  display:block;
+  width: 96%;
+  margin: 0.1rem;
+  background-color:#454444cf;
+  height: 1px;
+}

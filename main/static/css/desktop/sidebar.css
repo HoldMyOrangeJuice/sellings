@@ -21,6 +21,7 @@
 #sidebar-wrapper {
 
     box-shadow: 4px 2px 2px rgba(0.1, 0.1, 0.1, 0.5);
+    padding-top: 3vh;
     width: 25vw;
     min-width: 400px;
     overflow-y: auto;

@@ -1,21 +1,5 @@
 "use strict"
 
-function scrolled()
-{
-    return (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
-}
-
-function isMobile()
-{
-  try{
-      document.createEvent("TouchEvent");
-      return true;
-  }
-  catch(e){ return false; }
-}
-
-
-
 const DEF_BLANK_VAL_TEXT = "-";
 const DEF_BLANK_VAL_NUM = "?";
 const SCREENS_TILL_FETCH = 3;
@@ -39,13 +23,7 @@ const LANG = {
     desc: "Описание",
     category:"категории"
 }
-function uuid()
-{
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
+
 function get_image_path(file_or_files)
 {
     if (file_or_files instanceof Array)
@@ -65,7 +43,6 @@ registerCustomFilter("min", get_min_image_path);
 
 class Searcher
 {
-
     static query = undefined;
     static cat = null;
     static id=null;
@@ -119,7 +96,6 @@ class Searcher
         Renderer.wipe_content();
 
         this.load_more();
-
     }
 
     static async load_more()
@@ -174,7 +150,6 @@ class NetworkerBase
 {
     static prehandle_response(response)
     {
-         console.log("response: ", response);
          if (response.alert)
          {
               Renderer.show_feedback(response.success, response.message);
@@ -295,9 +270,11 @@ class Networker extends NetworkerBase
 
     static async submit_order()
     {
+        //let data = serializeForm(OrderForm.form());
+        //console.log(data);
         let data = new FormData($('#orderModal').find('form')[0])
+        console.log(data);
         return Networker.POST(data, ORDER_URL);
-
     }
 
     static async get_fav_items()
@@ -372,9 +349,6 @@ class DOM
     {
         return new Element("#fav_container")
     }
-
-    // order
-
 }
 
 class OrderForm
@@ -389,7 +363,7 @@ class OrderForm
 
     static clearMessage()
     {
-        this.messageField.text("")
+        this.messageField().text("")
     }
 
     static set_subcat(idx)
@@ -397,9 +371,19 @@ class OrderForm
         this.subcatField().val(idx);
     }
 
+    static setWaitingState(state)
+    {
+        if (state)
+            this.modal().find(".modal-content").append(Spinner.render());
+
+        else
+            this.modal().find(".spinnerComponent").remove();
+    }
+
     static async submit()
     {
         let myform = this.form()[0];
+
         if (!myform.checkValidity())
         {
             if (myform.reportValidity)
@@ -407,23 +391,22 @@ class OrderForm
             return;
         }
 
-        this.close();
-        console.log("close");
+        localStorage.setItem("username", this.form().find("[name='username']").val())
+        localStorage.setItem("phone", this.form().find("[name='phone']").val())
+
+        this.setWaitingState(true);
         let response = await Networker.submit_order();
+        this.setWaitingState(false);
+
         if (response.success)
         {
+            this.close();
             this.clearMessage();
         }
-
-        else if (this.last_id)
+        else
         {
             let hints = response.payload;
-
-            setTimeout(()=>{
-                this.open(this.last_id, undefined);
-                this.show_hints(hints);
-            }, 500 );
-
+            this.show_hints(hints);
         }
     }
 
@@ -432,20 +415,19 @@ class OrderForm
         for (let field_name of Object.keys(hints))
         {
             let message = hints[field_name];
-            let field = this.form().find(`[name='${field_name}'][type!='hidden']`)
+            let field = this.form().find(`[name='${field_name}']`)
             $( `<p class='order-form-hint'>${message}</p>` ).insertAfter( field );
         }
-
     }
     static close()
     {
         this.set_subcat(undefined);
         this.modal().modal( "hide" );
-        $(".order-form-hint").remove();
     }
 
     static async open(item_id, subcat_idx)
     {
+        $(".order-form-hint").remove();
         this.last_id = item_id;
         let item = await Searcher.get_item(item_id)
 
@@ -478,10 +460,16 @@ class OrderForm
         {
             this.set_subcat(subcat_idx);
         }
-        console.log("show");
 
         $('#order_form_item_id').val(item_id);
         $('#item-data').html(`<span>${item.name}</span> <span>${item.condition || ""}</span>`)
+
+        let name = localStorage.getItem("username")
+        let phone = localStorage.getItem("phone")
+
+        this.form().find("[name='username']").val(name)
+        this.form().find("[name='phone']").val(phone)
+
         $('#orderModal').modal('show');
 
     }
@@ -516,18 +504,18 @@ class Renderer
             // append to category
             if ( DOM.catFrame(category).length == 0 )
             {
-                DOM.tableContainer().addComponent(CategoryFrame, {category})
+                DOM.tableContainer().addComponent(CManager.CategoryFrame, {category})
             }
-            DOM.catFrame(category).addComponent(FrameEntry, {item})
+            DOM.catFrame(category).addComponent(CManager.FrameEntry, {item})
         }
         else
         {
             // append to end
             if ( DOM.monoFrame().length == 0 )
             {
-                DOM.tableContainer().addComponent(MonoFrame)
+                DOM.tableContainer().addComponent(CManager.MonoFrame)
             }
-            DOM.monoFrame().addComponent(FrameEntry, {item} );
+            DOM.monoFrame().addComponent(CManager.FrameEntry, {item} );
         }
     }
 
@@ -539,7 +527,6 @@ class Renderer
         {
             for (let item of items)
             {
-                console.log("add item to table:", category, item);
                 this.fill_frame(category, item);
             }
         }
@@ -579,8 +566,15 @@ class Renderer
         $(`#fav_container`).addClass('fav_opened')
 
         PageActions.lock_scroll();
+        console.log(fav_items);
+        DOM.favouriteTable().addComponent(CManager.FavouriteTable, {fav_items})
+    }
 
-        DOM.favouriteTable().addComponent(FavouriteTable, {fav_items})
+    static handleOverlayOpen()
+    {
+        if (isMobile())
+        $(".mynavbar").css("top", "-" + ($(".mynavbar").height()+ 20) + "px");
+        $("body").addClass("modal-open")
     }
 
     static open_photo_view_window(elem_clicked, parent)
@@ -609,7 +603,8 @@ class Renderer
             icons: photos
         };
 
-        new Element('body').addComponent(ImageViewer, context);
+        new Element('body').addComponent(CManager.ImageViewer, context);
+        this.handleOverlayOpen();
 
         listen_to_swaps($('#image_viewer'),
         (dir)=>{if (dir == "<-")
@@ -914,7 +909,7 @@ function handle_search_submit()
 
 $(document).ready( function()
 {
-    new Element('#main').addComponent(MainFrame);
+    new Element('#main').addComponent(CManager.MainFrame);
     document.getElementById('search_form').onsubmit = function ()
     {
         return handle_search_submit()
