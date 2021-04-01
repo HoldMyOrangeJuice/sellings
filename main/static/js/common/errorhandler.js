@@ -1,13 +1,13 @@
 window.onerror = (msg, url, lineNo, columnNo, error) =>
 {
-    data = `${msg} at ${url}: line ${lineNo}:${columnNo} Version ${VERSION}`
+    let data = `${msg} at ${url}:<lnb>line ${lineNo}:${columnNo}<lnb>Version ${VERSION}<lnb>`
     try
     {
         fetch(`/api/user/error?data=${data}`)
     }
     catch(e)
     {
-        notify(data + "While handling above, this happened: " + e);
+        notify(data + "\nWhile handling above, this happened:\n" + e);
     }
 }
 

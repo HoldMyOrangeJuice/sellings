@@ -1,7 +1,7 @@
 "use strict"
 
-const DEF_BLANK_VAL_TEXT = "-";
-const DEF_BLANK_VAL_NUM = "?";
+var DEF_BLANK_VAL_TEXT = "-";
+var DEF_BLANK_VAL_NUM = "?";
 const SCREENS_TILL_FETCH = 3;
 
 const QUERY_URL = "/api/user/make_query";
@@ -10,7 +10,7 @@ const ORDER_URL = "/api/user/order";
 const EDIT_FAVOURITE_URL = "/api/user/edit_favourite";
 const HINTS_URL = "/api/user/get_hints"
 
-const LANG = {
+var LANG = {
     edit: "Редактировать",
     add: "Добавить",
     delete: "Удалить",
@@ -40,6 +40,7 @@ function get_min_image_path(filename)
 
 registerCustomFilter("media", get_image_path);
 registerCustomFilter("min", get_min_image_path);
+registerCustomFilter("enumerate", Object.entries);
 
 class Searcher
 {
@@ -100,7 +101,6 @@ class Searcher
 
     static async load_more()
     {
-
         if (this.disabled || this.fetch_blocked || this.part >= this.max_parts)
             return;
 
@@ -146,6 +146,7 @@ class Searcher
         return await Searcher.fetch({id: item_id})[0];
     }
 }
+
 class NetworkerBase
 {
     static prehandle_response(response)
@@ -349,6 +350,10 @@ class DOM
     {
         return new Element("#fav_container")
     }
+    static main()
+    {
+    return new Element("#main")
+    }
 }
 
 class OrderForm
@@ -504,18 +509,18 @@ class Renderer
             // append to category
             if ( DOM.catFrame(category).length == 0 )
             {
-                DOM.tableContainer().addComponent(CManager.CategoryFrame, {category})
+                DOM.tableContainer().addComponentAsync(CManager.CategoryFrame, {category})
             }
-            DOM.catFrame(category).addComponent(CManager.FrameEntry, {item})
+            DOM.catFrame(category).addComponentAsync(CManager.FrameEntry, {item})
         }
         else
         {
             // append to end
             if ( DOM.monoFrame().length == 0 )
             {
-                DOM.tableContainer().addComponent(CManager.MonoFrame)
+                DOM.tableContainer().addComponentAsync(CManager.MonoFrame)
             }
-            DOM.monoFrame().addComponent(CManager.FrameEntry, {item} );
+            DOM.monoFrame().addComponentAsync(CManager.FrameEntry, {item} );
         }
     }
 
@@ -567,7 +572,7 @@ class Renderer
 
         PageActions.lock_scroll();
         console.log(fav_items);
-        DOM.favouriteTable().addComponent(CManager.FavouriteTable, {fav_items})
+        DOM.favouriteTable().addComponentAsync(CManager.FavouriteTable, {fav_items})
     }
 
     static handleOverlayOpen()
@@ -603,7 +608,7 @@ class Renderer
             icons: photos
         };
 
-        new Element('body').addComponent(CManager.ImageViewer, context);
+        new Element('body').addComponentAsync(CManager.ImageViewer, context);
         this.handleOverlayOpen();
 
         listen_to_swaps($('#image_viewer'),
@@ -796,6 +801,7 @@ $(document).ready(function()
 
 function query(q)
 {
+
     Searcher.make_query({q: q});
 }
 
@@ -909,7 +915,7 @@ function handle_search_submit()
 
 $(document).ready( function()
 {
-    new Element('#main').addComponent(CManager.MainFrame);
+    DOM.main().addComponentAsync(CManager.MainFrame);
     document.getElementById('search_form').onsubmit = function ()
     {
         return handle_search_submit()

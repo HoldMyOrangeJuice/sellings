@@ -1,0 +1,42 @@
+version: "3"
+
+#docker builder prune
+
+services:
+  web:
+    container_name: web_container
+    networks:
+      - my-net
+
+    volumes:
+      - media_volume:/srv/web/dom21/Sellings/media
+      - static_volume:/srv/web/dom21/Sellings/static
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+
+  nginx:
+    container_name: nginx_container
+    networks:
+      - my-net
+
+    volumes:
+      - media_volume:/srv/web/dom21/Sellings/media
+      - static_volume:/srv/web/dom21/Sellings/static
+
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    restart: always
+    ports:
+      - 80:80
+
+volumes:
+  media_volume:
+  static_volume:
+
+networks:
+  my-net:
+    driver: bridge

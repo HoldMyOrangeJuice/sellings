@@ -148,7 +148,7 @@ let AdminSubcat = new Component(
 let UserSubcat = new Component(
     `
     <tr class='{$ if subcat.fav $} fav {$ endif $}'
-         data-subcat_id='{% subcat.subcat_id %}'
+         data-subcat_id='{% subcat_idx %}'
          data-item_id='{% item.id %}'
          data-role='subcat_entry'>
 
@@ -162,14 +162,14 @@ let UserSubcat = new Component(
 
         <td title="Цена">
             <span class='nowrap'>
-                {% subcat.price || '?' %} грн.
+                {% subcat.price || "?" %} грн.
             </span>
         </td>
 
         <!--
         <td>
             <span class='nowrap'>
-                {% subcat.amount || '?' %} шт.
+                {% subcat.amount || "?" %} шт.
             </span>
         </td>
         -->
@@ -200,7 +200,21 @@ let SubcatTable = new Component(
 CManager.register(SubcatTable, "SubcatTable", UNIVERSAL)
 
 let AdminImage = new Component(
-    `<img src='{$ if temp $} placeholder {$ else $} {% file >> media %} {$ endif $}'
+    `
+    {$ let uniqueid = uuid() $}
+
+    {$ if temp $}
+        {$ let reader  = new FileReader() $}
+
+        <script>
+            reader.onloadend = () =>
+            $("img[data-item_id='{% item.id %}'][data-uuid-promise='{% uniqueid %}']").attr("src", reader.result).removeAttr('data-uuid-promise')
+        </script>
+
+        {% reader.readAsDataURL(file) %}
+    {$ endif $}
+
+    <img src='{$ if temp $} placeholder {$ else $} {% file >> media %} {$ endif $}'
           class='adm-img {$ if temp $} temp_image {$ endif $}'
           data-item_id='{% item.id %}'
           data-role='illustration'
@@ -244,7 +258,7 @@ let UserImageBulk = new Component(
 
         {$ for path of item.photo_paths $}
 
-            {$ let side = (Math.min(200,($("#table-container").width()-item.photo_paths.length*40)/item.photo_paths.length))||200 $}
+            {$ let side = (Math.min(200,(jQuery("#table-container").width()-item.photo_paths.length*40)/item.photo_paths.length))||200 $}
 
 
             <img loading="lazy" class='bulk_item'
@@ -364,6 +378,41 @@ CManager.register(FavouriteTableDesktop, "FavouriteTable", DESKTOP_ONLY)
 let MainFrameDesktop = new Component(
     `<div class="flex"><p id='empty-query-banner'></p></div>
     <div id="table-container" class='body-main-content'>
+
+        <!-- placeholder table with spinner -->
+        <div class="flex body-main-content"><h3 class="mb-4">Загрузка...</h3></div>
+
+        <table class='placeholder table table-bordered table-stripped'>
+            <thead class="thead thead-dark">
+            <tr>
+            <th>Наименование</th>
+            <th>Подкатегории</th>
+            <th>Состояние</th>
+            <th>описание</th>
+            </tr>
+            </thead>
+        <tbody>
+        <tr>
+        <td colspan='4'>
+        <div style='display:flex;justify-content:center;align-items:center;height:30vh;'>
+            <div class="spinner-border text-warning" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+        </td>
+        </tr>
+        <tr>
+        <td colspan='4'>
+        <div style='width:100%;display:flex;justify-content:space-evenly'>
+        <div class='animated-background' style="width:200px;height:200px"></div>
+        <div class='animated-background' style="width:200px;height:200px"></div>
+        <div class='animated-background' style="width:200px;height:200px"></div>
+        </div>
+        </td>
+        </tr>
+        </tbody>
+
+        </table>
     <!-- to be filled with JS -->
     </div>`
 );
@@ -476,7 +525,7 @@ let UserFrameEntryDesktop = new Component(
         <td class='p-4'> {% item.description || DEF_BLANK_VAL_TEXT %} </td>
     </tr>
 
-    <tr photo-row' style="width: 25%">
+    <tr style="width: 25%; border-bottom:4px solid var(--cdark)">
         <td title="Изображения" colspan='4'>
             {% include ImageBulk %}
         </td>

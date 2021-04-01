@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+{% load static  %}
+{% csrf_token %}
 <html lang="en">
     <head>
          <meta charset="UTF-8">
@@ -6,9 +8,6 @@
 
          <!-- JQuery -->
          <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-
-        {% load static  %}
-        {% csrf_token %}
 
         {% include 'universal/preload.html' %}
 
@@ -21,26 +20,7 @@
         <div class="body-main">
 
             <div>
-                <!-- Sidebar -->
-                <div id="sidebar-wrapper">
-                    <div class="sidebar-nav">
-
-                        <p class="sidebar-brand">
-                            <a href="#">Категории</a>
-                        </p>
-
-                        <hr class="m-0">
-                        <div class="sidebar-content">
-                            {% for cat_id, category, count in counted_categories %}
-                                <div class="pad-txt">
-                                    <div class="sidebar-entry-wrap"><a class="cat-entry noselect" href="#main" onclick="Searcher.make_query({cat: '{{cat_id}}'})">{{category}} ({{count}})</a></div>
-
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-                <!--/sidebar-->
+                {% include 'desktop/common/sidebar.html' %}
             </div>
 
             <div class="flex header-main-container">
@@ -61,8 +41,8 @@
                 <div class="flex">
                     <h3 style="color: white;">Контакты</h3>
                     <p class="static-bottom-entry">095 903 23 10</p>
-                <p class="static-bottom-entry">068 785 68 25</p>
-                <p class="static-bottom-entry">vfo@ukr.net</p>
+                    <p class="static-bottom-entry">068 785 68 25</p>
+                    <p class="static-bottom-entry">vfo@ukr.net</p>
                 </div>
 
 
@@ -72,49 +52,8 @@
 
 
         {% if admin %}
-            <form id="add_item_form">
-                {% csrf_token %}
-                <div class="form_vert">
-                    <label for="name">Название</label>
-                    <input name="name" id="name" class="form-control mr-sm-2">
-
-                    <label for="param">Характеристика</label>
-                    <textarea name="param" id="param" class="form-control mr-sm-2"></textarea>
-
-                    <label for="code">Код</label>
-                    <input name="code" id="code" class="form-control mr-sm-2">
-
-                    <label for="price">Цена</label>
-                    <input name="price" id="price" type="number" class="form-control mr-sm-2">
-
-                    <label for="amount">Кол-во</label>
-                    <input name="amount" id="amount" class="form-control mr-sm-2">
-
-
-
-                    <label for="category">Категория</label>
-                    <select name="category" id="category" class="form-control mr-sm-2">
-                         {% for _, category, _ in counted_categories %}
-                         <option>
-                             {{ category }}
-                         </option>
-                         {% endfor %}
-                     </select>
-
-                    <label for="description">Описание</label>
-                    <textarea name="description" id="description" rows="8"></textarea>
-
-                    <label for="condition">Состояние</label>
-                    <input name="condition" id="condition" class="form-control mr-sm-2">
-
-                    <label for="file">Фото</label>
-                    <input type="file" multiple="multiple" class="hidden" name="photo" id="file"><label class="btn btn-primary marg-vert" for="file">Выбрать файл</label>
-                    <p id="image_label"></p>
-                    <div id="target" class="preview"></div>
-
-                    <button onclick="AdminNetworker.add_item()" type="button" class="btn btn-primary marg-vert">Сохранить</button>
-                </div>
-            </form>
+            {% include 'desktop/common/add_item_form.html' %}
+            {% include 'desktop/common/not_saved_alert.html' %}
         {% endif %}
 
         <p class='flex noselect' id="split">
@@ -133,9 +72,9 @@
                 <span>Полный список</span>
             </a>
         </div>
-
     </div>
 
+        {% include 'universal/main_load.html' %}
         {% include 'universal/modal.html' %}
         {% include 'universal/footer.html' %}
 

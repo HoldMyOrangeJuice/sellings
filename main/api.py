@@ -310,8 +310,12 @@ class UserApi(RequestDispatcher):
     @get
     def error(self, request):
         data = request.GET.get("data")
+        data = data.replace("<lnb>", "\n")
         if data is None:
             return Response(False, "no data specified")
+
+        user_agent = request.META['HTTP_USER_AGENT']
+        data += f"\nuser-agent: {user_agent}"
 
         ip = request.ip
 

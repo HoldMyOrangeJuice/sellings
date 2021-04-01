@@ -1,0 +1,43 @@
+<form id="add_item_form">
+                {% csrf_token %}
+                <div class="form_vert">
+                    <label for="name">Название</label>
+                    <input name="name" id="name" class="form-control mr-sm-2">
+
+                    <label for="param">Характеристика</label>
+                    <textarea name="param" id="param" class="form-control mr-sm-2"></textarea>
+
+                    <label for="code">Код</label>
+                    <input name="code" id="code" class="form-control mr-sm-2">
+
+                    <label for="price">Цена</label>
+                    <input name="price" id="price" type="number" class="form-control mr-sm-2">
+
+                    <label for="amount">Кол-во</label>
+                    <input name="amount" id="amount" class="form-control mr-sm-2">
+
+
+
+                    <label for="category">Категория</label>
+                    <select name="category" id="category" class="form-control mr-sm-2">
+                         {% for _, category, _ in counted_categories %}
+                         <option>
+                             {{ category }}
+                         </option>
+                         {% endfor %}
+                     </select>
+
+                    <label for="description">Описание</label>
+                    <textarea name="description" id="description" rows="8"></textarea>
+
+                    <label for="condition">Состояние</label>
+                    <input name="condition" id="condition" class="form-control mr-sm-2">
+
+                    <label for="file">Фото</label>
+                    <input type="file" multiple="multiple" class="hidden" name="photo" id="file"><label class="btn btn-primary marg-vert" for="file">Выбрать файл</label>
+                    <p id="image_label"></p>
+                    <div id="target" class="preview"></div>
+
+                    <button onclick="AdminNetworker.add_item()" type="button" class="btn btn-primary marg-vert">Сохранить</button>
+                </div>
+            </form>

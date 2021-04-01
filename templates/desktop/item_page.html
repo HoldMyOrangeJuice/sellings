@@ -8,9 +8,6 @@
      <meta charset="UTF-8">
      <title> {{ settings.title }} </title>
 
-    <!-- JQuery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-
     {% include 'universal/preload.html' %}
 
 </head>
@@ -30,13 +27,14 @@
             {% endfor %}
 
         </div>
-
     {% else %}
         <p>item not found</p>
     {% endif %}
 
+    {% include 'universal/main_load.html' %}
+
     <script>
-            Searcher.make_query({id: {{item.id}} });
+            Searcher.make_query({id: {{item.id}}, silent: true });
             Searcher.disabled = true;
     </script>
 
