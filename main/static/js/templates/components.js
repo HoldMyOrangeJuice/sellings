@@ -20,12 +20,12 @@ let ImageViewer = new Component(
 
         <p></p>
 
-        <button id='viewer_prev' class='btn btn-warning img-viewer-nav'><i class="fas fa-angle-left"></i></button>
+        <button id='viewer_prev' class='img-viewer-nav-btn'><i class="fas fa-angle-left"></i></button>
         <!-- img main -->
         <div id="image_main" style='background-image: url("{% active >> media %}")'>
         </div>
 
-        <button id='viewer_next' class='btn btn-warning img-viewer-nav'><i class="fas fa-angle-right"></i></button>
+        <button id='viewer_next' class='img-viewer-nav-btn'><i class="fas fa-angle-right"></i></button>
 
 
         <!-- icons -->
@@ -708,9 +708,44 @@ let FrameEntryMobile = select(AdminFrameEntryMobile, UserFrameEntryMobile)
 CManager.register(FrameEntryMobile, "FrameEntry", MOBILE_ONLY)
 
 let MainFrameMobile = new Component(
-    `<div class="flex"><p id='empty-query-banner'></p></div>
+    `<div class="flex">
+    <p id='empty-query-banner'></p>
+    </div>
+
     <div id="table-container" class='body-main-content'>
-    <!-- to be filled with JS -->
+
+        <!-- to be filled with JS -->
+
+        <!-- placeholder table with spinner -->
+        <div class="flex body-main-content"><h3 class="mb-4">Загрузка...</h3></div>
+
+        <table class='placeholder table table-bordered table-stripped'>
+            <thead class="thead thead-dark">
+            <tr>
+            <th>Загрузка...</th>
+            </tr>
+            </thead>
+        <tbody>
+        <tr>
+        <td>
+        <div style='display:flex;justify-content:center;align-items:center;height:30vh;'>
+            <div class="spinner-border text-warning" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <div style='width:100%;display:flex;justify-content:space-evenly'>
+            <div class='animated-background' style="width:200px;height:200px"></div>
+        </div>
+        </td>
+        </tr>
+        </tbody>
+
+        </table>
+
     </div>`, "MainFrame"
 );
 CManager.register(MainFrameMobile, "MainFrame", MOBILE_ONLY)

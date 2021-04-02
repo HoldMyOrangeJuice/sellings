@@ -139,12 +139,14 @@ label
 .header-main-container
 {
     padding: 3% 2% 3% 2%;
+    max-width: 60vw;
+    min-width: 300px;
 }
 
 .body-main
 {
-     display: flex;
-     background: url("/static/images/parchment_small_proc.png");
+
+     background: url("/static/images/parchment_small_proc.webp");
      -webkit-background-size: cover;
      -moz-background-size: cover;
      -o-background-size: cover;
@@ -162,11 +164,11 @@ label
 
 .body-text
 {
-    text-shadow: 1px 1px 1px black, 0 0 .5em #707070;
+    //text-shadow: 1px 1px 1px black, 0 0 .5em #707070;
     text-align: center;
     font-weight: 500;
     font-size: 1.5rem;
-    color: #464646;
+    color: black;
     width: 30%;
     min-width: 500px;
     margin-right: 0;
@@ -176,7 +178,7 @@ label
 {
     text-align: center;
     font-size: 1.7rem;
-    color: var(--cdark);
+    color: black;
     width: 40%;
     min-width: 500px;
     margin-right: 0;

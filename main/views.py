@@ -15,8 +15,8 @@ from main.models import Item
 
 
 class SiteSettings:
-    from django.conf import settings as s
-    settings = s
+    from django.conf import settings as django_settings
+    settings = django_settings
 
     title = "Распродажа б/у оборудования и предметов сервировки для дома и HoReCa"
 
@@ -27,7 +27,7 @@ class SiteSettings:
         новые. Надеемся, вы найдете для себя то, что вам нужно. Звоните, пишите. Будем рады ответить
         на ваши вопросы."""
 
-    version = "V1.1.3"
+    version = "V1.2.0"
 
     MEDIA_URL = settings.MEDIA_URL
     STATIC_URL = settings.STATIC_URL
@@ -83,7 +83,7 @@ def categorize_items(items, order_by_clicks=True):
 
 
 def count_cats():
-    """returns set of (category, entry count)"""
+    """ returns set of (category, entry count) """
     cats_to_use = zip(CATEGORIES.keys(), CATEGORIES.values())
     r = {}
     for cat_id, cat in cats_to_use:
@@ -174,6 +174,36 @@ def login_view(request):
         return redirect(settings.LOGIN_REDIRECT_URL)
 
 
+def make_sublist_of_categorized(categorized_items, start, limit):
+    """ this method is used to create sublist of categorized query response
+    it is required in order to keep everything in correct sequence, since it is possible for item to be loaded in it's
+    category on page that already was scrolled otherwise, this way it will be impossible to see that item. """
+    result = []
+
+    index = 0
+    for category, items in categorized_items:
+        part = []
+
+        if index + len(items) >= start:
+
+            local_index = max(0, start - index)
+            index += local_index
+
+            while index-start < limit and local_index < len(items):
+                part.append(items[local_index])
+                local_index += 1
+                index += 1
+
+        else:
+            index += len(items)
+
+        result.append([category, part])
+        if index-start == limit:
+            break
+
+    return result
+
+
 def get_items_page(cat=None, query=None, id=None, ids=None,
                    part_size=None, part=0,
                    session=None,
@@ -187,14 +217,16 @@ def get_items_page(cat=None, query=None, id=None, ids=None,
 
     max_parts = math.ceil(len(items) / part_size)
 
-    part_of_items = items[part * part_size: (part + 1) * part_size]
-
     if order_by_weight:
-        categorized = [["ordered", part_of_items]]
+        items_part = items[part * part_size: (part + 1) * part_size]
+        categorized_part = [["ordered", items_part]]
     else:
-        categorized = categorize_items(part_of_items, order_by_clicks=True)
+        categorized = categorize_items(items, order_by_clicks=True)
+        categorized_part = make_sublist_of_categorized(categorized,
+                                                       start=part * part_size,
+                                                       limit=part_size)
 
-    return Item.serialize_items(categorized=categorized, session=session), max_parts, len(items)
+    return Item.serialize_items(categorized=categorized_part, session=session), max_parts, len(items)
 
 
 def serialize_query(query=None, cat=None, id=None,
@@ -221,12 +253,12 @@ def simplify(s):
         replace(",", " ").replace("/", " "). \
         replace("\\", " ").replace("-", " "). \
         replace("#", " ").replace("\"", " "). \
-        replace("'", " ")
+        replace("\'", " ")
     while "  " in s:
         s = s.replace("  ", " ")
     return s
 
 
 def favicon(request):
-    return HttpResponse(open(f'{STATIC_ROOT}/favicon.ico', 'rb').read(),
-                        content_type='image/x-icon')
+    file = open(f'{STATIC_ROOT}/favicon.ico', 'rb').read()
+    return HttpResponse(file, content_type='image/x-icon')

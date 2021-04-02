@@ -17,11 +17,11 @@
 
         {% include 'desktop/common/navbar.html' %}
 
-        <div class="body-main">
+        <div class="body-main flex">
 
-            <div>
-                {% include 'desktop/common/sidebar.html' %}
-            </div>
+<!--            <div>-->
+{#                {% include 'desktop/common/sidebar.html' %} #}
+<!--            </div>-->
 
             <div class="flex header-main-container">
                 <h2 class="px-5 body-title">
@@ -38,8 +38,7 @@
                 <hr>
                 <hr>
 
-                <div class="flex">
-                    <h3 style="color: white;">Контакты</h3>
+                <div class="flex row my-2">
                     <p class="static-bottom-entry">095 903 23 10</p>
                     <p class="static-bottom-entry">068 785 68 25</p>
                     <p class="static-bottom-entry">vfo@ukr.net</p>
@@ -56,9 +55,9 @@
             {% include 'desktop/common/not_saved_alert.html' %}
         {% endif %}
 
-        <p class='flex noselect' id="split">
-            Чтобы добавить товар в избранное или оформить заказ, <br>
-            нажмите на <i class="fas fa-ellipsis-v" style="font-size: 15px; display: inline;"></i>
+        <p class='flex noselect row' id="split">
+            Чтобы добавить товар в избранное или оформить заказ,
+            нажмите на <i class="fas fa-ellipsis-v mx-2" style="font-size: 15px; display: inline;"></i>
             возле его характеристики.</p>
         <div class="bg-main">
 

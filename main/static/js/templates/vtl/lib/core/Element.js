@@ -21,19 +21,4 @@ class Element
 
         return this;
     }
-
-    addComponentAsync(component, context)
-    {
-
-        let promise = new Promise((resolve, reject)=>
-        {
-            setTimeout(()=>
-            {
-                this.addComponent(component, context)
-                if (resolve)
-                    resolve();
-            }, 0);
-        })
-        return promise;
-    }
 }
