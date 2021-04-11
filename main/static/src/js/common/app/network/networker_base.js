@@ -1,3 +1,5 @@
+import Renderer from "../renderer"
+
 class NetworkerBase
 {
     static prehandle_response(response)

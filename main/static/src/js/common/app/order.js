@@ -1,4 +1,6 @@
 import Searcher from "./searcher"
+import CManager from "../../templates/vtl/lib/core/manager/ComponentManager"
+import Networker from "./network/networker"
 
 class OrderForm
 {
@@ -25,7 +27,7 @@ class OrderForm
         if (state)
         {
             $("#order-backdrop").show();
-            this.modal().find(".modal-content").append(Spinner.render());
+            this.modal().find(".modal-content").append(CManager.Spinner.render());
         }
         else
         {
@@ -76,6 +78,12 @@ class OrderForm
         }
     }
 
+    static clear(){
+        $(".order-form-hint").remove();
+        $("#order-subcat-selection").empty();
+        $("#orderModal").find("textarea[name='message']").val("");
+    }
+
     static close()
     {
         this.set_subcat(undefined);
@@ -84,9 +92,7 @@ class OrderForm
 
     static async open(item_id, subcat_idx)
     {
-        $(".order-form-hint").remove();
-        $("#order-subcat-selection").remove();
-        $("#orderModal").find("textarea[name='message']").val("");
+        this.clear();
 
         this.last_id = item_id;
         let item = await Searcher.get_item(item_id)
