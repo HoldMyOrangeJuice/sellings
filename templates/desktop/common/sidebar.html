@@ -10,8 +10,7 @@
                         <div class="sidebar-content">
                             {% for cat_id, category, count in counted_categories %}
                                 <div class="pad-txt">
-                                    <div class="sidebar-entry-wrap"><a class="cat-entry noselect" href="#main" onclick="Searcher.make_query({cat: '{{cat_id}}'})">{{category}} ({{count}})</a></div>
-
+                                    <div class="sidebar-entry-wrap"><a class="cat-entry noselect" href="#main" data-role='query-cat' data-cat_id='{{cat_id}}'>{{category}} ({{count}})</a></div>
                                 </div>
                             {% endfor %}
                         </div>

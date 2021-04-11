@@ -1,12 +1,9 @@
 <!-- should be added when main dom elements are done -->
-{%load static %}
+{% load static %}
 
-{% include 'universal/vtl.html' %}
-<script src="{% static 'js/templates/components.js' %}"></script>
-{% include 'universal/app_imports.html' %}
-<script defer src="{% static 'js/swap.js' %}"></script>
+<script>
+    document.body.style.paddingTop = document.getElementsByClassName("mynavbar")[0].offsetHeight + "px"
+</script>
 
-{% if admin %}
-    <script src="{% static 'js/common/admin.js' %}"></script>
-    <script src="{% static 'js/common/adminGen.js' %}"></script>
-{% endif %}
+
+

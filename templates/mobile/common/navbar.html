@@ -2,7 +2,8 @@
 
 <link rel="stylesheet" href="{% static 'css/mobile/navbar.css'%}">
 
-<nav class="mynavbar sticky">
+<nav class="sticky">
+  <div class="mynavbar">
     <table class="navtable">
       <tr>
         <td style="width: 70%"></td>
@@ -25,18 +26,18 @@
          <td class="left">
           <!-- Full List -->
               {% if render_mode == 'price_list' %}
-              <a class="btn btn-dark nowrap" style="width: 100%"  onclick="Searcher.make_query({q:''})">
-                <i class="fas fa-list ml-1" style=""></i>
+              <a class="btn btn-dark nowrap" style="width: 100%" data-role='full-list'>
+                <i class="fas fa-list ml-1"></i>
                 <span>Полный список</span>
               </a>
               {% elif render_mode == 'single_item' %}
-                <a class="btn btn-dark nowrap"  href="/">На Главную</a>
+                <a class="btn btn-dark nowrap" style="width: 100%" href="/"> <i class="fas fa-home mr-1"></i> На Главную</a>
               {% endif %}
         </td>
 
         <td colspan="2">
           <!-- Favourite -->
-          <a class="btn btn-dark nowrap dropdown-toggle" id="toggle_fav_tab_btn" onclick="Renderer.toggle_fav_tab();">
+          <a class="btn btn-dark nowrap dropdown-toggle max-fill" id="toggle_fav_tab_btn" data-role="toggle-fav-tab">
             <i class="ml-1 fas fa-shopping-cart"></i>
             <span>Корзина</span>
           </a>
@@ -55,7 +56,7 @@
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
               {% for cat_id, category, count in counted_categories %}
                 {% if render_mode == 'price_list' %}
-                  <a class="dropdown-item noselect" onclick="Searcher.make_query({cat: '{{cat_id}}', silent: true})">{{category}} ({{count}})</a>
+                  <a class="dropdown-item noselect" data-role='query-cat' data-cat_id='{{cat_id}}'>{{category}} ({{count}})</a>
                 {% elif render_mode == 'single_item' %}
                   <a class="dropdown-item noselect" href="/?cat={{cat_id}}">{{category}} ({{count}})</a>
                 {% endif %}
@@ -66,7 +67,7 @@
 
         <td class="right">
            <!-- Contacts -->
-           <a class="btn btn-dark"  onclick='Renderer.toggle_contacts()'><i class="fas fa-phone"></i></a>
+           <a class="btn btn-dark"  data-role="toggle-contacts"><i class="fas fa-phone"></i></a>
         </td>
       </tr>
 
@@ -86,7 +87,13 @@
         </td>
       </tr>
     </table>
+  </div>
     <div id="fav_container" style="height: 0px;"></div>
+<div style="display: flex; justify-content: flex-end;">
+  <div id="alert-container">
+  </div>
+</div>
+
   </nav>
 
 

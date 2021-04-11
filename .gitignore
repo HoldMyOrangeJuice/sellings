@@ -7,3 +7,4 @@ main/static/images/items
 *.xls
 *.json
 js-logs
+node_modules

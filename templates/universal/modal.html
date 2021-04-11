@@ -12,9 +12,29 @@
       </div>
 
       <div class="modal-body flex">
-         <p style="font-size: 40px">095 903 23 10</p>
-        <p style="font-size: 40px">068 785 68 25</p>
-        <p style="font-size: 40px" >vfo@ukr.net</p>
+         <p style="font-size: 40px">
+           095 903 23 10
+           <button data-role="make-call" data-phone-number="0959032310"
+                   class="btn btn-success">
+             <i class="fas fa-phone"></i>
+           </button>
+         </p>
+
+        <p style="font-size: 40px">
+          068 785 68 25
+          <button data-role="make-call" data-phone-number="0687856825"
+                  class="btn btn-success">
+            <i class="fas fa-phone"></i>
+          </button>
+        </p>
+
+        <p
+           style="font-size: 40px" >vfo@ukr.net
+          <button data-role="send-mail" data-address="vfo@ukr.net;pelikanzp@gmail.com" data-body="отправлено с сайта dom21.zp.ua"
+                  class="btn btn-success">
+            <i class="fas fa-envelope"></i>
+          </button>
+        </p>
       </div>
 
       <div class="modal-footer">
@@ -52,6 +72,7 @@
 <div class="modal fade" id="orderModal" tabindex="-1" role="dialog" aria-labelledby="orderModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
+      <div id="order-backdrop" style="display:none; position: absolute;width: 100%;height: 100%;z-index: 100;background-color:#00000085;"></div>
       <div class="modal-header">
         <h5 class="modal-title" id="orderModalLabel">Новый заказ</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -84,7 +105,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
-        <button type="button" class="btn btn-primary" onclick="OrderForm.submit()">Отправить</button>
+        <button type="button" class="btn btn-primary" data-role='submit-order-form'>Отправить</button>
       </div>
     </div>
   </div>

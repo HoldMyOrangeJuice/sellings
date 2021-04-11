@@ -6,8 +6,6 @@
          <meta charset="UTF-8">
          <title>{{settings.title}}</title>
 
-         <!-- JQuery -->
-         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
         {% include 'universal/preload.html' %}
 
@@ -29,13 +27,11 @@
                 </h2>
 
                 <hr>
-                <hr>
-                
+
                 <p class="body-text">
                     {{ settings.text_main }}
                 </p>
 
-                <hr>
                 <hr>
 
                 <div class="flex row my-2">
@@ -65,12 +61,7 @@
 
         </div>
 
-        <div class="flex pb-4">
-            <a class="btn btn-dark nowrap" style="margin-right: 10px;" onclick="Searcher.make_query({q:''})">
-                <i class="fas fa-list ml-1" style=""></i>
-                <span>Полный список</span>
-            </a>
-        </div>
+
     </div>
 
         {% include 'universal/main_load.html' %}
@@ -91,9 +82,7 @@
         {% endif %}
 
         <!-- support for host?q= requests -->
-        <script>
-               Searcher.make_query({silent:true, {%if query is not None %}q: '{{query}}',{%endif%} {%if cat_id is not None %}cat: '{{cat_id}}'{%endif%} });
-        </script>
+
 
         {% include 'universal/postload.html' %}
 

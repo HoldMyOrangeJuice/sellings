@@ -19,50 +19,25 @@
         {% include 'mobile/common/navbar.html' %}
 
         <div class="body-main">
+            <div class="top-body-wrapper">
+                <div class="flex">
 
-            <div class="flex">
+                    <h2>
+                        {{ settings.text_title }}
+                    </h2>
 
-                <h2>
-                    {{ settings.text_title }}
-                </h2>
+                    <p class="body-text">
+                        {{ settings.text_main }}
+                    </p>
 
-                <p class="body-text">
-                    {{ settings.text_main }}
-                </p>
+                    <p class="text-main">
+                        <a onclick="Renderer.toggle_contacts()" class="big link1 noselect">
+                            Контакты
+                        </a>
+                    </p>
 
-                <p class="text-main">
-                    <a onclick="Renderer.toggle_contacts()" class="big link1 noselect">
-                        Контакты
-                    </a>
-                </p>
-
-            </div>
-
-            <div>
-                <!-- Sidebar -->
-                <div id="sidebar-wrapper">
-                    <div class="sidebar-nav">
-
-                        <p class="sidebar-brand flex">
-                            <a href="#">Категории</a>
-                        </p>
-
-                        <hr>
-
-                        {% for cat_id, category, count in counted_categories %}
-                        <div class="pad-txt">
-                            <div class="sidebar-entry-wrap">
-                                <a class="cat-entry noselect"
-                                   onclick="Searcher.make_query({cat: '{{cat_id}}'})">{{category}} ({{count}})</a></div>
-
-                        </div>
-                        {% endfor %}
-                    </div>
                 </div>
-                <!--/sidebar-->
-
             </div>
-
         </div>
 
 
@@ -71,12 +46,13 @@
            {% include 'desktop/common/not_saved_alert.html' %}
         {% endif %}
 
-        <p class='flex noselect' id="split" style="margin: 0; padding: 15px 0 15px 0; box-shadow: 0px 5px 13px 10px rgba(0,0,0,0.53);
-        background: linear-gradient(180deg, rgba(85,85,85,1) 0%, rgba(208,208,208,1) 10%, rgba(249,249,249,1) 18%, rgba(244,244,246,1) 78%, rgba(218,218,218,1) 86%, rgba(130,130,130,1) 100%);
-        color: #6A6A6A;
+        <p class='flex noselect row' id="split" style="margin: 0; padding: 15px 0 15px 0; box-shadow: 0px 5px 13px 10px rgba(0,0,0,0.53);
+        background: linear-gradient(
+173deg
+, rgb(85 85 85 / 42%) 0%, rgba(208,208,208,1) 10%, rgb(187 187 187) 18%, rgba(244,244,246,1) 78%, rgb(234 237 236 / 67%) 86%, rgba(130,130,130,1) 100%);
+       color: #6A6A6A;
         font-weight: 500;
         ">
-            Чтобы добавить товар в избранное или оформить заказ, <br> нажмите на <i class="fas fa-ellipsis-v" style="font-size: 15px; display: inline;"></i> возле его характеристики.
         </p>
 
         <div id="main" class="bg-main">
@@ -87,7 +63,7 @@
             </div>
 
             <div class="flex">
-                    <a class="btn btn-dark nowrap" style="margin-right: 10px;" onclick="Searcher.make_query({q:''})">
+                    <a class="btn btn-dark nowrap" style="margin-right: 10px;" data-role="full-list">
                         <i class="fas fa-list ml-1" style=""></i>
                         <span>Полный список</span>
                     </a>
@@ -97,10 +73,6 @@
 
         {% include 'universal/main_load.html' %}
 
-           <!-- support for host?q= requests -->
-        <script>
-            Searcher.make_query({silent: true, {%if query is not None %}q: '{{query}}',{%endif%} {%if cat_id is not None %}cat: '{{cat_id}}',{%endif%} });
-        </script>
 
         {% include 'universal/modal.html' %}
         {% include 'universal/footer.html' %}

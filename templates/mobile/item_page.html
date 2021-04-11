@@ -22,15 +22,15 @@
         <div class="flex">
             <div id="main"></div>
 
-            <button class="btn btn-dark btn-lg mb-2"
-                    onclick="OrderForm.open(Searcher.items[0].id)">
-                    <i class="fas fa-envelope"></i> Заказать
-            </button>
+<!--            <button class="btn btn-dark btn-lg mb-2"-->
+<!--                    onclick="OrderForm.open(Searcher.items[0].id)">-->
+<!--                    <i class="fas fa-envelope"></i> Заказать-->
+<!--            </button>-->
 
             <div id="split"></div>
 
             {% for path in item.photo_paths %}
-                <img class="photo-gal" src="{{ MEDIA_URL }}images/items/{{ path }}">
+<!--                <img class="photo-gal" src="{{ MEDIA_URL }}images/items/{{ path }}">-->
             {% endfor %}
 
         </div>
@@ -40,11 +40,6 @@
     {% endif %}
 
     {% include 'universal/main_load.html' %}
-
-    <script>
-        Searcher.make_query({id: {{item.id}} });
-        Searcher.disabled = true;
-    </script>
 
     {% include 'universal/modal.html' %}
     {% include 'universal/footer.html' %}

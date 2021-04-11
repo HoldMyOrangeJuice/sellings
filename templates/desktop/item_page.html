@@ -5,6 +5,12 @@
     {% load static %}
     {% csrf_token %}
 
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="http://dom21.zp.ua" />
+    <meta property="og:title" content="{{ item.name }}" />
+    <meta property="og:description" content="{{ item.description }}" />
+    <meta property="og:image" content="http://dom21.zp.ua/static/images/min/{{ photo }}" />
+
      <meta charset="UTF-8">
      <title> {{ settings.title }} </title>
 
@@ -20,10 +26,10 @@
         <div id="main">
 
         </div>
-            <button class="btn btn-dark btn-lg" onclick="OrderForm.open(Searcher.items[0].id)">Заказать</button>
+<!--            <button class="btn btn-dark btn-lg" onclick="OrderForm.open(Searcher.items[0].id)">Заказать</button>-->
             <div id="split"></div>
             {% for path in item.photo_paths %}
-                <img src="{{ MEDIA_URL }}images/items/{{ path }}" class="illustration-big">
+<!--                <img src="{{ MEDIA_URL }}images/items/{{ path }}" class="illustration-big">-->
             {% endfor %}
 
         </div>
@@ -33,10 +39,6 @@
 
     {% include 'universal/main_load.html' %}
 
-    <script>
-            Searcher.make_query({id: {{item.id}}, silent: true });
-            Searcher.disabled = true;
-    </script>
 
     {% include 'universal/postload.html' %}
     {% include 'universal/modal.html' %}

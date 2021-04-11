@@ -138,12 +138,13 @@ def item_page(request):
 
     item = item[0]
     item.add_click()
-
+    print(item.photo_paths)
     return render_with_settings(request=request,
                                 template_name=f'{gtp(request)}/item_page.html',
                                 context={'render_mode': 'single_item',
                                          'item': item,
                                          'categories': CATEGORIES,
+                                         'photo': item.photo_paths[0] if item.photo_paths else "placeholder",
                                          'counted_categories': count_cats()})
 
 

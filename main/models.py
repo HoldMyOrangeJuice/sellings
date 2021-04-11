@@ -1,13 +1,9 @@
-import random
 import uuid
 
 import jsonfield
-from django.contrib.auth.models import AnonymousUser as DjangoAnonymous
-from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import models
 
 from Sellings.settings import MEDIA_ROOT
-
 
 
 class Item(models.Model):

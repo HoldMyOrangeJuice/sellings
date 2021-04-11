@@ -1,0 +1,33 @@
+#search {
+    width: 30vw;
+}
+
+.header-main-container {
+    padding: 3% 2% 3% 2%;
+    max-width: 60vw;
+    min-width: 300px;
+}
+
+.body-title {
+    text-align: center;
+    font-size: 1.7rem;
+    color: black;
+    width: 40%;
+    min-width: 500px;
+    margin-right: 0;
+}
+
+.body-text {
+    text-align: center;
+    font-weight: 500;
+    font-size: 1.5rem;
+    color: black;
+    width: 30%;
+    min-width: 500px;
+    margin-right: 0;
+}
+
+#table-container
+{
+    width: 1000px;
+}
