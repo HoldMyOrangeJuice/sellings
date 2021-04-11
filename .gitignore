@@ -5,6 +5,6 @@ main/orders.txt
 main/static/images/items
 /media/
 *.xls
-*.json
+settings.json
 js-logs
 node_modules

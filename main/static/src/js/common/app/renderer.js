@@ -25,6 +25,7 @@ class Renderer
     {
         $('nav.sticky').hide();
     }
+
     static show_navbar()
     {
         $('nav.sticky').show();
@@ -32,10 +33,7 @@ class Renderer
 
     static wipe_content()
     {
-        // scroll to top to avoid loading like half of table
         DOM.tableContainer().empty();
-        console.log("scroll");
-        window.scrollTo(0, 0);
     }
 
     static delete_item(item_id)
@@ -195,7 +193,7 @@ class Renderer
     static close_image_view_window()
     {
         $("#image_viewer").remove();
-        PageActions.unlock_scroll();        
+        PageActions.unlock_scroll();
     }
 
     static close_fav_table()
@@ -220,20 +218,45 @@ class Renderer
         }
     }
 
-    static show_alert(success, title, message)
+    static async loadHeight(height)
+    {
+        let c = 0;
+        while($(document).height() < height && !Searcher.done())
+        {
+            let res = await Searcher.load_more();
+            console.log("loaded", res);
+            c++;
+            if (c == 100){
+                console.warn("Could not load enough in 100 iterations (~15 should be max)");
+                break;
+            }
+        }
+    }
+
+    static async restoreHeight() {
+        let height = localStorage[`SCROLL_${document.location.pathname}`] || "0";
+        height = parseInt(height);
+        await this.loadHeight(height).then( ()=>scroll(0, height) )
+    }
+
+    static show_alert(success, title, message, remove_after)
     {
         let id = `alert-id-${Math.round(Math.random()*100)}`
         let alert_html = `<div id='${id}' class="alert ${success ? "alert-success" : "alert-danger"} alert-dismissible fade">
-        <strong>${title}</strong><span class="ml-1 content">${message}</span>
+        <strong>${title}</strong><span class="ml-5 content">${message}</span>
         <button type="button" class="close" data-dismiss="alert">&times;</button>
         </div>`;
         $("#alert-container").append(alert_html);
         let e = $(`#${id}`);
         console.log(e);
         e.addClass('show');
-        if (success)
+
+        if (remove_after === -1)
+            return;
+
+        if (remove_after || success)
         {
-            setTimeout(()=>{e.remove();}, 10000)
+            setTimeout(()=>{e.remove();}, remove_after || 10000)
         }
     }
 

@@ -468,9 +468,20 @@ input[type=submit] {
 
 .three-dots-btn
 {
-    background: 0;
-    border: 0;
+    background: #ebebeba6;
+    margin: 5px;
+    border: 1px solid var(--clight);
+    border-radius: 3px;
+     box-shadow: #b8b8b8 0px 0px 3px 0px;
+    color: #433333;
+    transition: 0.2s;
 }
+.three-dots-btn:hover {
+    background: #d4d0d096;
+    box-shadow: #9e9c9c 0px 0px 6px 2px;
+    transition: 0.2s;
+}
+
 .three-dots-btn:focus
 {
     outline: none;
@@ -562,11 +573,30 @@ input[type=submit] {
     position: absolute;
     max-width: 100px;
     width: 10vw;
+    background: #4c484812;
+    color: black;
+    height: 100%;
+    border: 0;
+    transition: 0.3s;
+    font-size: xx-large;
+}
+.img-viewer-nav-btn:focus {
+    outline: none;
+}
+
+.img-viewer-nav-btn:hover
+{
+    position: absolute;
+    max-width: 100px;
+    width: 10vw;
     background: #333030e6;
     color: white;
     height: 100%;
     border: 0;
+    transition: 0.3s;
+    font-size: xx-large;
 }
+
 
 .image_viewer_close
 {
@@ -611,8 +641,11 @@ input[type=submit] {
 
     width: max(100px, 5vw);
     height: max(100px, 5vw);
-
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center center;
+    object-fit: cover;
 }
+.modal-dialog {
+    top: 0!important;
+}
+ @media (max-width: @screen-xs-min) {
+  .modal-xs { width: @modal-sm; }
+ }

@@ -5,37 +5,54 @@ import Renderer from "./renderer"
 import PageActions from "./page_utils"
 import { isMobile, scrolled } from "../utils"
 
-function initListeners()
+
+
+
+// called when dom is ready
+export default function initListeners()
 {
-    $(document).ready(()=>
+
+    if (ADMIN)
     {
-        Renderer.renderMainFrame()
+        document.getElementById("file").onchange = (e)=>{ previewImage(document.getElementById("file"), document.getElementById("target"))};
+    }
 
-        if (render_mode == 'price_list') {
-               Searcher.make_query({
-                    silent: true,
-                    q: page_href_query,
-                    cat: page_href_cat_id})
-        }
-        else
+    $(window).scroll( ()=>
+    {
+        if($(window).scrollTop() + SCREENS_TILL_FETCH * $(window).height() > $(document).height() )
         {
-            Searcher.make_query({id: item_id, silent: true });
-            Searcher.disabled = true;
+           Searcher.load_more();
         }
+   });
 
-        if (ADMIN)
+    $(window).on('beforeunload', ()=>{
+       localStorage[`SCROLL_${document.location.pathname}`] = scrolled();
+
+       // save previous location
+       localStorage.prev_path = document.location.pathname;
+   });
+
+   $(document).on('click', '[data-role="restore-height"]', Renderer.restoreHeight.bind(Renderer));
+
+    window.onerror = (msg, url, lineNo, columnNo, error) =>
+    {
+        let data = `${msg} at ${url}:<lnb>line ${lineNo}:${columnNo}<lnb>Version ${VERSION}<lnb>`
+        try
         {
-            document.getElementById("file").onchange = (e)=>{ previewImage(document.getElementById("file"), document.getElementById("target"))};
+            Renderer.show_alert(false, "Ошибка", "Что-то пошло не по плану, возможно, страница отображена не корректно", 10000);
+            fetch(`/api/user/error?data=${data}`)
         }
+        catch(e)
+        {}
+    }
 
-        $(window).scroll( ()=> {
-            if($(window).scrollTop() + SCREENS_TILL_FETCH * $(window).height() > $(document).height() )
-            {
-               Searcher.load_more();
-            }
-       });
-
-    })
+    function notify(data)
+    {
+        $("#error-log").text(data);
+        $('#errorModal').modal({
+            show: true
+        });
+    }
 
     // open order
     $(document).on("click", "[data-role='open-order-form']",
@@ -291,4 +308,3 @@ function initListeners()
          autocomplete(response.payload.items);
      });
 }
-export default initListeners

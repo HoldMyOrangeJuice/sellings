@@ -53,7 +53,8 @@ MIDDLEWARE = [
 
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'middleware.middleware.get_ip_middleware'
+    'middleware.middleware.get_ip_middleware',
+    'middleware.middleware.activity_recorder_middleware'
 ]
 
 ROOT_URLCONF = 'Sellings.urls'
@@ -127,7 +128,7 @@ STATIC_ROOT = f"{BASE_DIR}/static/"
 
 SETTINGS_JSON_PATH = f"{BASE_DIR}/settings.json"
 
-MEDIA_URL = f"media/"
+MEDIA_URL = f"/media/"
 MEDIA_ROOT = f"{BASE_DIR}/media/"
 
 cfg = json.load(open(SETTINGS_JSON_PATH))
@@ -140,3 +141,14 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = "rastaprices@gmail.com"
 EMAIL_HOST_PASSWORD = cfg.get("password")
 EMAIL_PORT = 587
+
+title = "Распродажа б/у оборудования и предметов сервировки для дома и HoReCa"
+
+text_title = "Распродажа складной мебели, б/у оборудования для кухни и предметов сервировки для дома и HoReCa"
+
+text_main = """Добро пожаловать на наш сайт. Здесь вы найдете оборудование для кухни, раскладную мебель,
+        посуду и необходимый инвентарь для сервировки праздничного стола. Есть позиции б/у, есть
+        новые. Надеемся, вы найдете для себя то, что вам нужно. Звоните, пишите. Будем рады ответить
+        на ваши вопросы."""
+
+version = "V1.3.0"

@@ -17,9 +17,14 @@ class Searcher
     {
         return this.cat != null || !this.query;
     }
-
-    static make_query({q=null, cat=null, id=null, silent=false})
+    static done()
     {
+        return this.part === this.max_parts-1;
+    }
+
+    static async make_query({q=null, cat=null, id=null, silent=false})
+    {
+        console.log("make query");
         if (!silent)
             PageActions.scroll_to('#split');
 
@@ -56,7 +61,8 @@ class Searcher
             this.part = 0;
         }
 
-        this.load_more(true);
+        await this.load_more(true);
+        console.log("query done");
 
     }
 
@@ -99,6 +105,7 @@ class Searcher
             console.log("add items");
             Renderer.add_to_table(categorized_items)
         }
+        return [categorized_items, parts, total];
     }
 
     static async get_item(item_id)

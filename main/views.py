@@ -8,6 +8,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
+import Sellings.settings as django_settings
 from Sellings.settings import STATIC_ROOT
 from main.forms import InitialPageDataForm
 from utils.network.ajax import Response
@@ -15,19 +16,12 @@ from main.models import Item
 
 
 class SiteSettings:
-    from django.conf import settings as django_settings
     settings = django_settings
 
-    title = "Распродажа б/у оборудования и предметов сервировки для дома и HoReCa"
-
-    text_title = "Распродажа складной мебели, б/у оборудования для кухни и предметов сервировки для дома и HoReCa"
-
-    text_main = """Добро пожаловать на наш сайт. Здесь вы найдете оборудование для кухни, раскладную мебель,
-        посуду и необходимый инвентарь для сервировки праздничного стола. Есть позиции б/у, есть
-        новые. Надеемся, вы найдете для себя то, что вам нужно. Звоните, пишите. Будем рады ответить
-        на ваши вопросы."""
-
-    version = "V1.3.0"
+    title = django_settings.title
+    text_title = django_settings.text_title
+    text_main = django_settings.text_main
+    version = django_settings.version
 
     MEDIA_URL = settings.MEDIA_URL
     STATIC_URL = settings.STATIC_URL
@@ -214,7 +208,7 @@ def get_items_page(cat=None, query=None, id=None, ids=None,
 
     if not order_by_weight:
         # order by clicks and category
-        items = items.order_by("-clicks")
+        items = items.order_by("clicks")
 
     max_parts = math.ceil(len(items) / part_size)
 

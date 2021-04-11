@@ -1,0 +1,36 @@
+{
+  "name": "dom21",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/common/app/app.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.12.1",
+    "css-minify": "^1.1.0",
+    "minify-dir": "^1.0.6",
+    "promise-polyfill": "^8.2.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.13.14",
+    "@babel/core": "^7.13.14",
+    "@babel/plugin-proposal-class-properties": "^7.13.0",
+    "@babel/plugin-transform-runtime": "^7.13.10",
+    "@babel/preset-env": "^7.13.12",
+    "@babel/runtime-corejs2": "^7.13.10",
+    "@babel/runtime-corejs3": "^7.13.10",
+    "babel-loader": "^8.2.2",
+    "core-js": "^3.10.0",
+    "webpack": "^5.30.0",
+    "webpack-cli": "^4.6.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "webpack": "webpack",
+    "minify": "minify-dir ./main/static/src/css/common ./main/static/out"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

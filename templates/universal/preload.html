@@ -24,9 +24,6 @@
 <!-- JQuery -->
 <script src="{% static 'js/jQuery.js' %}"></script>
 
-<script defer src="{% static 'js/common/errorhandler.js' %}"></script>
-<script defer src="{% static 'js/common/utils.js' %}"></script>
-
 {% if not admin%}
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-5Y39P42T9E"></script>
     <script>
@@ -43,8 +40,8 @@
     // should probably make something smart about rendering contexts in future
     
     var VERSION = "{{ settings.version }}"
-    var MEDIA_URL = {{ settings.MEDIA_URL }}
-    var STATIC_URL = {{ settings.STATIC_URL }}
+    var MEDIA_URL = "{{ settings.MEDIA_URL }}"
+    var STATIC_URL = "{{ settings.STATIC_URL }}"
 
     var CATS = {{categories|safe}};
     var ADMIN = {% if admin %}true;{%else%}false;{%endif%}

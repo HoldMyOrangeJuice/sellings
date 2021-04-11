@@ -20,7 +20,7 @@ class Element
         let html = component.render(context || {});
         this.append(html);
         let end_time = Date.now();
-        console.log(`Rendering of ${component.name} took ${end_time-start_time}ms.\nwas cached: ${!!cached}`);
+        //console.log(`Rendering of ${component.name} took ${end_time-start_time}ms.\nwas cached: ${!!cached}`);
 
         return this;
     }

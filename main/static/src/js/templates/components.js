@@ -228,8 +228,7 @@ function initComponents()
             -->
 
             <td title="Действия"
-                style='position: relative; padding-left: 0; padding-right: 0;'>
-
+                style='padding: 0.5rem 0 0 0; width: 1px'>
                 {% include ThreeDots %}
             </td>
         </tr>`
@@ -319,7 +318,9 @@ function initComponents()
                      data-role='image-icon'
                      data-path='{% path %}'
                      data-item_id = {% item.id %}
-                     data-photo-index = {% i %}>
+                     data-photo-index = {% i %}
+                     alt="{% item.name %}"
+                     title="{% item.name %}">
             {$ endfor $}
 
         </div>`
@@ -615,7 +616,7 @@ function initComponents()
                 Состояние {% item.condition || DEF_BLANK_VAL_TEXT %}
             </td>
 
-            <td class='p-4 text-left'> {% item.description || DEF_BLANK_VAL_TEXT %} </td>
+            <td title="Описание" class='p-4 text-left'> {% item.description || DEF_BLANK_VAL_TEXT %} </td>
         </tr>
 
         <tr style="width: 25%; border-bottom:4px solid var(--cdark)">

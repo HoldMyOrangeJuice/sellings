@@ -310,39 +310,38 @@ class UserApi(RequestDispatcher):
     @get
     def error(self, request):
         data = request.GET.get("data")
-        data = data.replace("<lnb>", "\n")
         if data is None:
-            return Response(False, "no data specified")
+            data = "No Data Specified :("
+
+        data = data.replace("<lnb>", "\n")
 
         user_agent = request.META['HTTP_USER_AGENT']
         data += f"\nuser-agent: {user_agent}"
 
-        ip = request.ip
-
-        from datetime import datetime
-
-        today = datetime.now()
-        day = today.strftime("%b-%d-%Y")
-        f_time = today.strftime("%B %d, %Y %H:%M:%S")
-
-        log_folder = "js-logs"
-        log_name = f"js-error-log-{day}.txt"
-
         try:
-
-            if not os.path.exists(f"{os.getcwd()}/{log_folder}/{log_name}"):
-                if not os.path.exists(log_folder):
-                    os.mkdir(log_folder)
-
-                open(f"{os.getcwd()}/{log_folder}/{log_name}", "w").close()
-
-            with open(f"{os.getcwd()}/{log_folder}/{log_name}", "r+") as f:
-                f.read()
-                f.write(f"[{f_time}] JS threw an error at client [{ip}]:\n{data}\n")
-
+            write_log(f"JS threw an error at client [{request.ip}]:\n{data}\n", "error")
             return Response(True, "success")
         except PermissionError:
             return Response(True, "permission error")
+
+
+def write_log(data, msg_type="log"):
+    from datetime import datetime
+    today = datetime.now()
+    day = today.strftime("%b-%d-%Y")
+    f_time = today.strftime("%B %d, %Y %H:%M:%S")
+
+    log_folder = "js-logs"
+    log_name = f"activity-log-{day}.txt"
+    if not os.path.exists(f"{os.getcwd()}/{log_folder}/{log_name}"):
+        if not os.path.exists(log_folder):
+            os.mkdir(log_folder)
+
+        open(f"{os.getcwd()}/{log_folder}/{log_name}", "w").close()
+
+    with open(f"{os.getcwd()}/{log_folder}/{log_name}", "r+") as f:
+        f.read()
+        f.write(f"\n[{msg_type.upper()}] [{f_time}] {data}\n")
 
 
 def process_order(item_id, subcat_id, username, message, phone, ip):

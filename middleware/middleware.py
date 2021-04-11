@@ -3,6 +3,19 @@ from django.contrib.auth.middleware import AuthenticationMiddleware, get_user
 from django.contrib.auth.models import AnonymousUser
 from django.utils.functional import SimpleLazyObject
 
+from main.api import write_log
+
+
+def activity_recorder_middleware(get_response):
+    def middleware(request):
+        url = request.build_absolute_uri()
+        if "static" in url or "media" in url:
+            return get_response(request)
+        write_log(f"User {request.ip} requested url {url}", "access log")
+        return get_response(request)
+
+    return middleware
+
 
 def get_ip_middleware(get_response):
 
